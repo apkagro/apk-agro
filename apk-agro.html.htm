@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="es"><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="APK Agro">
+<title>APK Agro</title>
+<link href="APK%20Agro_files/css2.css" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#F4F1EB;--surface:#FFFFFF;--surface2:#EDEBE5;
+  --text:#1A1916;--text2:#6B6860;--text3:#A09E9A;
+  --accent:#2D6A4F;--accent2:#40916C;--accent-light:#D8F3DC;--accent-dark:#1B4332;
+  --warn:#B5451B;--warn-light:#FDE8E0;
+  --blue:#1A5F8A;--blue-light:#E1F0FA;
+  --purple:#5B2D8E;--purple-light:#F0EAF8;
+  --amber:#92400E;--amber-light:#FEF3C7;
+  --border:#E2DED8;--radius:12px;--radius-sm:8px;
+  --font:'DM Sans',sans-serif;--mono:'DM Mono',monospace;
+}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;font-size:15px}
+.app{max-width:480px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column}
+
+/* LOGIN */
+#login-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:32px 24px;text-align:center;background:var(--accent-dark)}
+.login-logo{font-size:36px;font-weight:600;color:#fff;letter-spacing:-1px;margin-bottom:6px}
+.login-logo span{color:#74C69D;font-weight:300}
+.login-sub{font-size:14px;color:#74C69D;margin-bottom:48px;font-family:var(--mono)}
+.login-card{background:#fff;border-radius:20px;padding:28px 24px;width:100%;max-width:340px}
+.login-card h2{font-size:18px;font-weight:600;margin-bottom:8px;color:var(--text)}
+.login-card p{font-size:13px;color:var(--text2);margin-bottom:24px;line-height:1.6}
+.btn-google{width:100%;background:#fff;border:1.5px solid var(--border);border-radius:var(--radius);padding:13px;font-family:var(--font);font-size:14px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;color:var(--text);transition:all .2s}
+.btn-google:hover{border-color:var(--accent);background:var(--accent-light)}
+.btn-google img{width:20px;height:20px}
+.sync-status{position:fixed;top:0;left:0;right:0;background:var(--accent);color:#fff;font-size:12px;text-align:center;padding:6px;z-index:999;transform:translateY(-100%);transition:transform .3s}
+.sync-status.show{transform:translateY(0)}
+.sync-status.error{background:var(--warn)}
+
+/* TOPBAR */
+.topbar{background:var(--accent-dark);padding:14px 16px 12px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.topbar-logo{font-size:17px;font-weight:600;color:#fff;letter-spacing:-0.3px}
+.topbar-logo span{color:#74C69D;font-weight:300}
+.topbar-right{display:flex;align-items:center;gap:10px}
+.topbar-date{font-size:11px;color:#74C69D;font-family:var(--mono)}
+.btn-sync{background:none;border:1px solid rgba(116,198,157,.4);border-radius:20px;color:#74C69D;font-size:11px;padding:4px 10px;cursor:pointer;font-family:var(--font);display:flex;align-items:center;gap:4px}
+.btn-sync svg{width:12px;height:12px;stroke-width:2}
+.btn-sync.syncing svg{animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* NAV */
+.nav{background:var(--surface);border-bottom:1px solid var(--border);display:flex;position:sticky;top:49px;z-index:99}
+.nav-btn{flex:1;padding:11px 4px 9px;border:none;background:none;color:var(--text3);font-family:var(--font);font-size:10px;font-weight:500;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;border-bottom:2px solid transparent;transition:all .2s}
+.nav-btn.active{color:var(--accent);border-bottom-color:var(--accent)}
+.nav-btn svg{width:18px;height:18px;stroke-width:1.8}
+
+/* VIEWS */
+.view{display:none;flex:1;padding-bottom:20px}
+.view.active{display:block}
+.view-header{padding:18px 16px 10px;display:flex;align-items:center;justify-content:space-between}
+.view-title{font-size:20px;font-weight:600;letter-spacing:-0.5px}
+.btn-primary{background:var(--accent);color:#fff;border:none;border-radius:var(--radius-sm);padding:8px 13px;font-family:var(--font);font-size:13px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:5px}
+.btn-primary svg{width:15px;height:15px;stroke-width:2.5}
+
+/* SEARCH */
+.search-wrap{padding:0 16px 6px;position:relative}
+.search-icon{position:absolute;left:28px;top:50%;transform:translateY(-50%);color:var(--text3);pointer-events:none}
+.search-icon svg{width:14px;height:14px;stroke-width:2}
+.search-box{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:9px 12px 9px 34px;font-family:var(--font);font-size:14px;color:var(--text);outline:none}
+.search-hint{font-size:11px;color:var(--text3);padding:3px 16px 6px;font-style:italic}
+
+/* CHIPS */
+.chip-row{padding:2px 16px 10px;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}
+.chip-row::-webkit-scrollbar{display:none}
+.chip{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:5px 11px;font-size:12px;color:var(--text2);cursor:pointer;font-family:var(--font);white-space:nowrap;transition:all .15s}
+.chip.active{background:var(--accent);border-color:var(--accent);color:#fff}
+
+/* DASHBOARD */
+.dash-section{padding:12px 16px 0}
+.dash-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1.2px;color:var(--text3);margin-bottom:8px}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px;text-align:center}
+.stat-num{font-size:24px;font-weight:600;letter-spacing:-1px;color:var(--accent)}
+.stat-num.warn{color:var(--warn)}
+.stat-lbl{font-size:11px;color:var(--text2);margin-top:1px}
+.alert-card{background:var(--warn-light);border:1px solid #F5C6B3;border-radius:var(--radius);padding:10px 13px;margin-bottom:7px;cursor:pointer}
+.alert-card-title{font-weight:600;font-size:13px;color:var(--warn)}
+.alert-card-sub{font-size:11px;color:#8B3A1F;margin-top:2px}
+.visit-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:11px 13px;margin-bottom:7px;cursor:pointer}
+.visit-card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+.visit-card-name{font-weight:600;font-size:13px}
+.visit-card-date{font-size:11px;color:var(--text3);font-family:var(--mono)}
+.visit-card-text{font-size:12px;color:var(--text2);line-height:1.5}
+.prox-badge{display:inline-flex;align-items:center;gap:4px;background:var(--blue-light);color:var(--blue);font-size:11px;font-weight:500;padding:3px 8px;border-radius:20px}
+
+/* CAMPO CARDS */
+.card-list{padding:0 16px;display:flex;flex-direction:column;gap:8px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:13px 14px;cursor:pointer;transition:border-color .15s}
+.card:hover{border-color:var(--accent)}
+.card-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:7px}
+.card-name{font-weight:600;font-size:14px;line-height:1.3;flex:1}
+.badge{font-size:10px;font-weight:500;padding:3px 7px;border-radius:20px;white-space:nowrap;margin-left:7px;flex-shrink:0}
+.badge-exp{background:var(--blue-light);color:var(--blue)}
+.badge-ind{background:var(--accent-light);color:var(--accent-dark)}
+.card-meta{display:flex;flex-direction:column;gap:3px;margin-bottom:7px}
+.card-meta-row{display:flex;align-items:center;gap:5px;color:var(--text2);font-size:12px}
+.card-meta-row svg{width:12px;height:12px;stroke-width:2;color:var(--text3);flex-shrink:0}
+.cultivo-pills{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:7px}
+.cultivo-pill{background:var(--amber-light);color:var(--amber);font-size:10px;font-weight:500;padding:2px 8px;border-radius:20px}
+.card-footer{padding-top:8px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.dias-ok{color:var(--accent);font-size:11px}
+.dias-warn{color:var(--warn);font-size:11px;font-weight:600}
+.pending-badge{background:var(--warn-light);color:var(--warn);font-size:11px;font-weight:500;padding:3px 8px;border-radius:20px}
+.no-pending{font-size:11px;color:var(--accent)}
+
+/* DIRECTORIO */
+.alpha-letter{font-size:10px;font-weight:600;color:var(--text3);padding:8px 16px 3px;letter-spacing:1px;font-family:var(--mono)}
+.dir-item{background:var(--surface);border-bottom:1px solid var(--border);padding:11px 16px;cursor:pointer;display:flex;align-items:center;gap:11px}
+.dir-item:first-of-type{border-top:1px solid var(--border)}
+.dir-item:hover{background:var(--surface2)}
+.dir-avatar{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex-shrink:0}
+.av-campo{background:var(--accent-light);color:var(--accent-dark)}
+.av-exp{background:var(--blue-light);color:var(--blue)}
+.av-admin{background:var(--amber-light);color:var(--amber)}
+.av-dueno{background:#FCE7F3;color:#9D174D}
+.av-asesor{background:var(--purple-light);color:var(--purple)}
+.dir-info{flex:1;min-width:0}
+.dir-name{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dir-sub{font-size:11px;color:var(--text3);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dir-arrow svg{width:13px;height:13px;stroke-width:2;color:var(--text3)}
+
+/* PENDIENTES */
+.pend-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;margin-bottom:7px}
+.pend-card.done{opacity:.5}
+.pend-client{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--accent);margin-bottom:3px}
+.pend-text{font-size:14px;color:var(--text);margin-bottom:4px;line-height:1.4}
+.pend-nota{font-size:11px;color:var(--text3);font-style:italic;margin-bottom:6px}
+.pend-meta{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.pend-date{font-size:11px;color:var(--text3);font-family:var(--mono)}
+.btn-done{background:none;border:1px solid var(--border);border-radius:var(--radius-sm);padding:4px 10px;font-size:11px;color:var(--text2);cursor:pointer;font-family:var(--font);display:flex;align-items:center;gap:4px}
+.btn-done svg{width:11px;height:11px;stroke-width:2}
+.pend-card.done .btn-done{background:var(--accent-light);border-color:var(--accent);color:var(--accent)}
+.pend-nota-input{width:100%;border:1px dashed var(--border);border-radius:var(--radius-sm);padding:5px 9px;font-family:var(--font);font-size:12px;color:var(--text);background:var(--bg);outline:none;margin-top:6px}
+
+/* MODALES */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:flex-end}
+.modal-overlay.open{display:flex}
+.modal{background:var(--surface);border-radius:20px 20px 0 0;width:100%;max-height:93vh;overflow-y:auto;padding-bottom:36px}
+.modal-handle{width:34px;height:4px;background:var(--border);border-radius:2px;margin:11px auto 0}
+.modal-header{padding:13px 17px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:flex-start}
+.modal-title{font-size:16px;font-weight:600;letter-spacing:-0.3px;flex:1;padding-right:12px}
+.modal-close{background:none;border:none;cursor:pointer;color:var(--text2);padding:3px;flex-shrink:0}
+.modal-close svg{width:18px;height:18px;stroke-width:2}
+.modal-section{padding:13px 17px;border-bottom:1px solid var(--border)}
+.sec-title{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--text3);margin-bottom:9px}
+.info-row{display:flex;align-items:flex-start;gap:9px;margin-bottom:8px;font-size:13px}
+.info-row svg{width:14px;height:14px;stroke-width:1.8;color:var(--text3);flex-shrink:0;margin-top:1px}
+.info-lbl{color:var(--text2);min-width:72px;font-size:12px}
+.info-val{color:var(--text);font-weight:500;line-height:1.4;flex:1}
+.contact-chip{display:inline-flex;align-items:center;gap:5px;background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:4px 10px;font-size:12px;margin:2px 3px 2px 0}
+.contact-chip-role{font-size:10px;color:var(--text3)}
+.rs-item{background:var(--surface2);border-radius:var(--radius-sm);padding:7px 10px;margin-bottom:5px;font-size:13px}
+.rs-rut{font-size:11px;color:var(--text3);font-family:var(--mono);margin-top:1px}
+.visit-hist-item{border-left:2px solid var(--border);padding:0 0 13px 12px;position:relative;margin-left:5px}
+.visit-hist-item:last-child{padding-bottom:0}
+.visit-hist-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);position:absolute;left:-5px;top:3px;border:2px solid var(--surface)}
+.visit-hist-date{font-size:10px;color:var(--text3);font-family:var(--mono);margin-bottom:3px}
+.visit-hist-text{font-size:13px;color:var(--text);line-height:1.5;margin-bottom:5px}
+.visit-pend-item{font-size:12px;display:flex;align-items:flex-start;gap:5px;color:var(--text2);margin-bottom:3px}
+.visit-pend-item.sent{color:var(--accent);text-decoration:line-through;opacity:.6}
+.visit-pend-item svg{width:11px;height:11px;stroke-width:2;flex-shrink:0;margin-top:1px}
+.visit-pend-nota{font-size:10px;color:var(--text3);font-style:italic;margin-left:16px;margin-bottom:2px}
+.prep-box{background:var(--amber-light);border-radius:var(--radius-sm);padding:10px 12px;font-size:13px;color:var(--amber);line-height:1.5;font-style:italic}
+.btn-row{padding:13px 17px 0;display:flex;gap:8px}
+.btn-full{flex:1;background:var(--accent);color:#fff;border:none;border-radius:var(--radius);padding:12px;font-family:var(--font);font-size:14px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px}
+.btn-full svg{width:16px;height:16px;stroke-width:2}
+.btn-outline{background:none;border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;font-family:var(--font);font-size:13px;color:var(--text2);cursor:pointer;display:flex;align-items:center;gap:5px}
+.btn-outline svg{width:15px;height:15px;stroke-width:2}
+
+/* FORMS */
+.form-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:300;align-items:flex-end}
+.form-modal.open{display:flex}
+.form-inner{background:var(--surface);border-radius:20px 20px 0 0;width:100%;max-height:96vh;overflow-y:auto;padding-bottom:44px}
+.form-section{padding:13px 17px}
+.form-label{font-size:11px;font-weight:600;color:var(--text2);margin-bottom:5px;display:block;text-transform:uppercase;letter-spacing:.5px}
+.form-input{width:100%;border:1px solid var(--border);border-radius:var(--radius-sm);padding:9px 11px;font-family:var(--font);font-size:14px;color:var(--text);background:var(--bg);outline:none;margin-bottom:10px}
+.form-input:focus{border-color:var(--accent)}
+.form-textarea{width:100%;border:1px solid var(--border);border-radius:var(--radius-sm);padding:9px 11px;font-family:var(--font);font-size:14px;color:var(--text);background:var(--bg);outline:none;resize:none;min-height:75px;margin-bottom:10px}
+.form-textarea:focus{border-color:var(--accent)}
+select.form-input{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236B6860' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 11px center}
+.form-divider{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--text3);padding:4px 0 8px;border-top:1px solid var(--border);margin-top:4px}
+.add-row{display:flex;gap:7px;margin-bottom:8px}
+.add-input{flex:1;border:1px solid var(--border);border-radius:var(--radius-sm);padding:9px 11px;font-family:var(--font);font-size:13px;color:var(--text);background:var(--bg);outline:none}
+.btn-add{background:var(--accent);color:#fff;border:none;border-radius:var(--radius-sm);padding:9px 12px;cursor:pointer;flex-shrink:0}
+.btn-add svg{width:16px;height:16px;stroke-width:2.5;display:block}
+.tag-list{display:flex;flex-direction:column;gap:5px;margin-bottom:8px}
+.tag-item{background:var(--surface2);border-radius:var(--radius-sm);padding:7px 11px;font-size:13px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.tag-item span{flex:1}
+.btn-rem{background:none;border:none;cursor:pointer;color:var(--text3);padding:2px;flex-shrink:0}
+.btn-rem svg{width:13px;height:13px;stroke-width:2}
+.form-actions{padding:12px 17px 0;display:flex;gap:8px}
+.btn-save{flex:1;background:var(--accent);color:#fff;border:none;border-radius:var(--radius);padding:13px;font-family:var(--font);font-size:14px;font-weight:500;cursor:pointer}
+.btn-cancel{background:none;border:1px solid var(--border);border-radius:var(--radius);padding:13px 14px;font-family:var(--font);font-size:13px;color:var(--text2);cursor:pointer}
+.pend-add-row{display:flex;gap:7px;margin-bottom:7px}
+.pend-input-form{flex:1;border:1px solid var(--border);border-radius:var(--radius-sm);padding:9px 11px;font-family:var(--font);font-size:13px;color:var(--text);background:var(--bg);outline:none}
+.pend-list-form{display:flex;flex-direction:column;gap:5px;margin-bottom:8px}
+.pend-form-item{background:var(--accent-light);border-radius:var(--radius-sm);padding:7px 11px;font-size:13px;color:var(--accent-dark);display:flex;align-items:center;justify-content:space-between;gap:8px}
+.btn-gps{background:var(--blue-light);color:var(--blue);border:1px solid #B3D5ED;border-radius:var(--radius-sm);padding:9px 12px;font-family:var(--font);font-size:13px;cursor:pointer;display:flex;align-items:center;gap:6px;margin-bottom:10px;width:100%}
+.btn-gps svg{width:15px;height:15px;stroke-width:2}
+.radio-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.radio-opt{border:1px solid var(--border);border-radius:20px;padding:6px 12px;font-size:12px;cursor:pointer;color:var(--text2);background:var(--surface);font-family:var(--font)}
+.radio-opt.sel{background:var(--accent);border-color:var(--accent);color:#fff}
+.empty-state{text-align:center;padding:32px 20px;color:var(--text3)}
+.empty-state svg{width:34px;height:34px;stroke-width:1.2;margin-bottom:10px;opacity:.35}
+.empty-state p{font-size:13px;line-height:1.6}
+.minuta-box{background:var(--surface2);border-radius:var(--radius-sm);padding:12px;font-size:12px;line-height:1.7;color:var(--text);font-family:var(--mono);white-space:pre-wrap;word-break:break-word;max-height:220px;overflow-y:auto;margin-bottom:10px}
+.btn-copy{background:var(--accent);color:#fff;border:none;border-radius:var(--radius-sm);padding:9px 14px;font-family:var(--font);font-size:13px;cursor:pointer;display:flex;align-items:center;gap:6px;width:100%;justify-content:center}
+.btn-copy svg{width:15px;height:15px;stroke-width:2}
+.loading{text-align:center;padding:40px;color:var(--text3);font-size:13px}
+</style>
+<style id="googleidentityservice_button_styles">.qJTHM{-moz-user-select:none;-webkit-user-select:none;-ms-user-select:none;color:#202124;direction:ltr;-webkit-touch-callout:none;font-family:Roboto-Regular,arial,sans-serif;-webkit-font-smoothing:antialiased;font-weight:400;margin:0;overflow:hidden;-webkit-text-size-adjust:100%}.ynRLnc{left:-9999px;position:absolute;top:-9999px}.L6cTce{display:none}.bltWBb{overflow-wrap:break-word;word-break:break-word}.hSRGPd{color:#1a73e8;cursor:pointer;font-weight:500;text-decoration:none}.Bz112c-W3lGp{height:16px;width:16px}.Bz112c-E3DyYd{height:20px;width:20px}.Bz112c-r9oPif{height:24px;width:24px}.Bz112c-u2z5K{height:36px;width:36px}.Bz112c-uaxL4e{border-radius:10px}.LgbsSe-Bz112c{display:block}.S9gUrf-YoZ4jf{border:none;margin:0;padding:0}.S9gUrf-YoZ4jf *{border:none;margin:0;padding:0}.fFW7wc-ibnC6b>.aZ2wEe>div{border-color:#4285f4}.P1ekSe-ZMv3u{transition:height .2s linear}.P1ekSe-ZMv3u>div:first-child{background-color:#1a73e8!important;transition:width .3s linear}.P1ekSe-ZMv3u>div:nth-child(2){background-image:linear-gradient(90deg,rgba(255,255,255,.7),rgba(255,255,255,.7)),linear-gradient(90deg,#1a73e8,#1a73e8)!important}.P1ekSe-ZMv3u>div:nth-child(3){background-image:linear-gradient(90deg,rgba(255,255,255,.7),rgba(255,255,255,.7)),linear-gradient(90deg,#1a73e8,#1a73e8)!important}.haAclf{display:inline-block}.nsm7Bb-HzV7m-LgbsSe{border-radius:4px;-moz-box-sizing:border-box;box-sizing:border-box;transition:background-color .218s,border-color .218s;-moz-user-select:none;-webkit-user-select:none;-ms-user-select:none;-webkit-appearance:none;background-color:#fff;background-image:none;border:1px solid #dadce0;color:#3c4043;cursor:pointer;font-family:Google Sans,arial,sans-serif;font-size:14px;height:40px;letter-spacing:.25px;outline:none;overflow:hidden;padding:0 12px;position:relative;text-align:center;vertical-align:middle;white-space:nowrap;width:auto}@media screen and (-ms-high-contrast:active){.nsm7Bb-HzV7m-LgbsSe{border:2px solid windowText;color:windowText}}@media screen and (preferes-contrast:more){.nsm7Bb-HzV7m-LgbsSe{color:#000}}.nsm7Bb-HzV7m-LgbsSe.pSzOP-SxQuSe{font-size:14px;height:32px;letter-spacing:.25px;padding:0 10px}.nsm7Bb-HzV7m-LgbsSe.purZT-SxQuSe{font-size:11px;height:20px;letter-spacing:.3px;padding:0 8px}.nsm7Bb-HzV7m-LgbsSe.Bz112c-LgbsSe{padding:0;width:40px}.nsm7Bb-HzV7m-LgbsSe.Bz112c-LgbsSe.pSzOP-SxQuSe{width:32px}.nsm7Bb-HzV7m-LgbsSe.Bz112c-LgbsSe.purZT-SxQuSe{width:20px}.nsm7Bb-HzV7m-LgbsSe.JGcpL-RbRzK{border-radius:20px}.nsm7Bb-HzV7m-LgbsSe.JGcpL-RbRzK.pSzOP-SxQuSe{border-radius:16px}.nsm7Bb-HzV7m-LgbsSe.JGcpL-RbRzK.purZT-SxQuSe{border-radius:10px}.nsm7Bb-HzV7m-LgbsSe.i5vt6e-to915-Ia7Qfc{border:1px solid #8e918f;background-color:#131314;color:#e3e3e3}.nsm7Bb-HzV7m-LgbsSe.MFS4be-Ia7Qfc{border:none;color:#fff}.nsm7Bb-HzV7m-LgbsSe.MFS4be-v3pZbf-Ia7Qfc{background-color:#1a73e8}.nsm7Bb-HzV7m-LgbsSe.MFS4be-JaPV2b-Ia7Qfc{background-color:#202124;color:#e8eaed}@media screen and (prefers-contrast:more){.nsm7Bb-HzV7m-LgbsSe.MFS4be-JaPV2b-Ia7Qfc{color:#fff}}.nsm7Bb-HzV7m-LgbsSe .nsm7Bb-HzV7m-LgbsSe-Bz112c{height:18px;margin-right:8px;min-width:18px;width:18px}.nsm7Bb-HzV7m-LgbsSe.pSzOP-SxQuSe .nsm7Bb-HzV7m-LgbsSe-Bz112c{height:14px;min-width:14px;width:14px}.nsm7Bb-HzV7m-LgbsSe.purZT-SxQuSe .nsm7Bb-HzV7m-LgbsSe-Bz112c{height:10px;min-width:10px;width:10px}.nsm7Bb-HzV7m-LgbsSe.jVeSEe .nsm7Bb-HzV7m-LgbsSe-Bz112c{margin-left:8px;margin-right:-4px}.nsm7Bb-HzV7m-LgbsSe.Bz112c-LgbsSe .nsm7Bb-HzV7m-LgbsSe-Bz112c{margin:0;padding:10px}.nsm7Bb-HzV7m-LgbsSe.Bz112c-LgbsSe.pSzOP-SxQuSe .nsm7Bb-HzV7m-LgbsSe-Bz112c{padding:8px}.nsm7Bb-HzV7m-LgbsSe.Bz112c-LgbsSe.purZT-SxQuSe .nsm7Bb-HzV7m-LgbsSe-Bz112c{padding:4px}.nsm7Bb-HzV7m-LgbsSe .nsm7Bb-HzV7m-LgbsSe-Bz112c-haAclf{border-top-left-radius:3px;border-bottom-left-radius:3px;display:-moz-box;display:flex;-moz-box-pack:center;justify-content:center;-moz-box-align:center;align-items:center;background-color:#fff;height:36px;margin-left:-10px;margin-right:12px;min-width:36px;width:36px}.nsm7Bb-HzV7m-LgbsSe .nsm7Bb-HzV7m-LgbsSe-Bz112c-haAclf .nsm7Bb-HzV7m-LgbsSe-Bz112c,.nsm7Bb-HzV7m-LgbsSe.Bz112c-LgbsSe .nsm7Bb-HzV7m-LgbsSe-Bz112c-haAclf .nsm7Bb-HzV7m-LgbsSe-Bz112c{margin:0;padding:0}.nsm7Bb-HzV7m-LgbsSe.pSzOP-SxQuSe .nsm7Bb-HzV7m-LgbsSe-Bz112c-haAclf{height:28px;margin-left:-8px;margin-right:10px;min-width:28px;width:28px}.nsm7Bb-HzV7m-LgbsSe.purZT-SxQuSe .nsm7Bb-HzV7m-LgbsSe-Bz112c-haAclf{height:16px;margin-left:-6px;margin-right:8px;min-width:16px;width:16px}.nsm7Bb-HzV7m-LgbsSe.Bz112c-LgbsSe .nsm7Bb-HzV7m-LgbsSe-Bz112c-haAclf{border-radius:3px;margin-left:2px;margin-right:0;padding:0}.nsm7Bb-HzV7m-LgbsSe.JGcpL-RbRzK .nsm7Bb-HzV7m-LgbsSe-Bz112c-haAclf{border-radius:18px}.nsm7Bb-HzV7m-LgbsSe.pSzOP-SxQuSe.JGcpL-RbRzK .nsm7Bb-HzV7m-LgbsSe-Bz112c-haAclf{border-radius:14px}.nsm7Bb-HzV7m-LgbsSe.purZT-SxQuSe.JGcpL-RbRzK .nsm7Bb-HzV7m-LgbsSe-Bz112c-haAclf{border-radius:8px}.nsm7Bb-HzV7m-LgbsSe .nsm7Bb-HzV7m-LgbsSe-bN97Pc-sM5MNb{display:-moz-box;display:flex;-moz-box-align:center;align-items:center;-moz-box-orient:horizontal;-moz-box-direction:normal;flex-direction:row;-moz-box-pack:justify;justify-content:space-between;flex-wrap:nowrap;height:100%;position:relative;width:100%}.nsm7Bb-HzV7m-LgbsSe .oXtfBe-l4eHX{-moz-box-pack:center;justify-content:center}.nsm7Bb-HzV7m-LgbsSe .nsm7Bb-HzV7m-LgbsSe-BPrWId{-moz-box-flex:1;flex-grow:1;font-family:Google Sans,arial,sans-serif;font-weight:500;overflow:hidden;text-overflow:ellipsis;vertical-align:top}.nsm7Bb-HzV7m-LgbsSe.purZT-SxQuSe .nsm7Bb-HzV7m-LgbsSe-BPrWId{font-weight:300}.nsm7Bb-HzV7m-LgbsSe .oXtfBe-l4eHX .nsm7Bb-HzV7m-LgbsSe-BPrWId{-moz-box-flex:0;flex-grow:0}.nsm7Bb-HzV7m-LgbsSe .nsm7Bb-HzV7m-LgbsSe-MJoBVe{transition:background-color .218s;bottom:0;left:0;position:absolute;right:0;top:0}.nsm7Bb-HzV7m-LgbsSe:focus,.nsm7Bb-HzV7m-LgbsSe:hover{box-shadow:none;border-color:rgb(210,227,252);outline:none}.nsm7Bb-HzV7m-LgbsSe:focus-within{outline:2px solid #00639b;border-color:transparent}.nsm7Bb-HzV7m-LgbsSe:hover .nsm7Bb-HzV7m-LgbsSe-MJoBVe{background:rgba(66,133,244,.08)}.nsm7Bb-HzV7m-LgbsSe:active .nsm7Bb-HzV7m-LgbsSe-MJoBVe,.nsm7Bb-HzV7m-LgbsSe:focus .nsm7Bb-HzV7m-LgbsSe-MJoBVe{background:rgba(66,133,244,.1)}.nsm7Bb-HzV7m-LgbsSe.i5vt6e-to915-Ia7Qfc:hover .nsm7Bb-HzV7m-LgbsSe-MJoBVe{background:rgba(255,255,255,.08)}.nsm7Bb-HzV7m-LgbsSe.i5vt6e-to915-Ia7Qfc:active .nsm7Bb-HzV7m-LgbsSe-MJoBVe,.nsm7Bb-HzV7m-LgbsSe.i5vt6e-to915-Ia7Qfc:focus .nsm7Bb-HzV7m-LgbsSe-MJoBVe{background:rgba(255,255,255,.12)}.nsm7Bb-HzV7m-LgbsSe.MFS4be-Ia7Qfc:hover .nsm7Bb-HzV7m-LgbsSe-MJoBVe{background:rgba(255,255,255,.24)}.nsm7Bb-HzV7m-LgbsSe.MFS4be-Ia7Qfc:active .nsm7Bb-HzV7m-LgbsSe-MJoBVe,.nsm7Bb-HzV7m-LgbsSe.MFS4be-Ia7Qfc:focus .nsm7Bb-HzV7m-LgbsSe-MJoBVe{background:rgba(255,255,255,.32)}.nsm7Bb-HzV7m-LgbsSe .n1UuX-DkfjY{border-radius:50%;display:-moz-box;display:flex;height:20px;margin-left:-4px;margin-right:8px;min-width:20px;width:20px}.nsm7Bb-HzV7m-LgbsSe.jVeSEe .nsm7Bb-HzV7m-LgbsSe-BPrWId{font-family:Roboto;font-size:12px;text-align:left}.nsm7Bb-HzV7m-LgbsSe.jVeSEe .nsm7Bb-HzV7m-LgbsSe-BPrWId .K4efff .fmcmS,.nsm7Bb-HzV7m-LgbsSe.jVeSEe .nsm7Bb-HzV7m-LgbsSe-BPrWId .ssJRIf{overflow:hidden;text-overflow:ellipsis}.nsm7Bb-HzV7m-LgbsSe.jVeSEe .nsm7Bb-HzV7m-LgbsSe-BPrWId .K4efff{display:-moz-box;display:flex;-moz-box-align:center;align-items:center;color:#5f6368;fill:#5f6368;font-size:11px;font-weight:400}.nsm7Bb-HzV7m-LgbsSe.jVeSEe.MFS4be-Ia7Qfc .nsm7Bb-HzV7m-LgbsSe-BPrWId .K4efff{color:#e8eaed;fill:#e8eaed}@media screen and (prefers-contrast:more){.nsm7Bb-HzV7m-LgbsSe.jVeSEe .nsm7Bb-HzV7m-LgbsSe-BPrWId .K4efff,.nsm7Bb-HzV7m-LgbsSe.jVeSEe.MFS4be-Ia7Qfc .nsm7Bb-HzV7m-LgbsSe-BPrWId .K4efff{color:#000;fill:#000}}.nsm7Bb-HzV7m-LgbsSe.jVeSEe .nsm7Bb-HzV7m-LgbsSe-BPrWId .K4efff .Bz112c{height:18px;margin:-3px -3px -3px 2px;min-width:18px;width:18px}.nsm7Bb-HzV7m-LgbsSe.jVeSEe .nsm7Bb-HzV7m-LgbsSe-Bz112c-haAclf{border-top-left-radius:0;border-bottom-left-radius:0;border-top-right-radius:3px;border-bottom-right-radius:3px;margin-left:12px;margin-right:-10px}.nsm7Bb-HzV7m-LgbsSe.jVeSEe.JGcpL-RbRzK .nsm7Bb-HzV7m-LgbsSe-Bz112c-haAclf{border-radius:18px}.L5Fo6c-sM5MNb{border:0;display:block;left:0;position:relative;top:0}.L5Fo6c-bF1uUb{border-radius:4px;bottom:0;cursor:pointer;left:0;position:absolute;right:0;top:0}.L5Fo6c-bF1uUb:focus{border:none;outline:none}sentinel{}</style></head>
+<body>
+
+<!-- SYNC STATUS -->
+<div class="sync-status" id="sync-status"></div>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-logo">APK <span>Agro</span></div>
+  <div class="login-sub">Gestión de visitas en terreno</div>
+  <div class="login-card">
+    <h2>Bienvenido</h2>
+    <p>Conecta tu cuenta Google para sincronizar tus datos en todos tus dispositivos.</p>
+    <button class="btn-google" onclick="iniciarLogin()">
+      <svg width="20" height="20" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"></path><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"></path><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"></path><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"></path></svg>
+      Conectar con Google Drive
+    </button>
+  </div>
+</div>
+
+<!-- APP -->
+<div class="app" id="app-screen" style="display:none">
+  <div class="topbar">
+    <div class="topbar-logo">APK <span>Agro</span></div>
+    <div class="topbar-right">
+      <div class="topbar-date" id="topbar-date"></div>
+      <button class="btn-sync" id="btn-sync" onclick="syncDrive()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+        Sincronizar
+      </button>
+    </div>
+  </div>
+  <nav class="nav">
+    <button class="nav-btn active" onclick="showView('dashboard')" id="nav-dashboard">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="3" y="14" width="7" height="7" rx="1"></rect><rect x="14" y="14" width="7" height="7" rx="1"></rect></svg>
+      Inicio
+    </button>
+    <button class="nav-btn" onclick="showView('campos')" id="nav-campos">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+      Campos
+    </button>
+    <button class="nav-btn" onclick="showView('directorio')" id="nav-directorio">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+      Directorio
+    </button>
+    <button class="nav-btn" onclick="showView('pendientes')" id="nav-pendientes">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+      Pendientes
+    </button>
+  </nav>
+
+  <!-- DASHBOARD -->
+  <div class="view active" id="view-dashboard">
+    <div class="view-header"><div class="view-title">Inicio</div></div>
+    <div class="dash-section">
+      <div class="dash-label">Resumen</div>
+      <div class="stat-grid">
+        <div class="stat-card"><div class="stat-num" id="s-campos">0</div><div class="stat-lbl">Campos</div></div>
+        <div class="stat-card"><div class="stat-num warn" id="s-pend">0</div><div class="stat-lbl">Pendientes</div></div>
+        <div class="stat-card"><div class="stat-num warn" id="s-aten">0</div><div class="stat-lbl">Sin visitar +30d</div></div>
+        <div class="stat-card"><div class="stat-num" id="s-mes">0</div><div class="stat-lbl">Visitas este mes</div></div>
+      </div>
+    </div>
+    <div class="dash-section"><div class="dash-label">Próximas visitas programadas</div><div id="dash-proximas"></div></div>
+    <div class="dash-section"><div class="dash-label">Requieren atención</div><div id="dash-alerts"></div></div>
+    <div class="dash-section"><div class="dash-label">Últimas visitas</div><div id="dash-visits"></div></div>
+  </div>
+
+  <!-- CAMPOS -->
+  <div class="view" id="view-campos">
+    <div class="view-header">
+      <div class="view-title">Campos</div>
+      <button class="btn-primary" onclick="openFormCampo()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>Nuevo</button>
+    </div>
+    <div class="search-wrap">
+      <div class="search-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></div>
+      <input class="search-box" id="campos-search" placeholder="Campo, exportadora, admin, zona, cultivo..." oninput="renderCampos()">
+      <div class="search-hint">Busca por cualquier dato del campo</div>
+    </div>
+    <div class="card-list" id="campos-list"></div>
+  </div>
+
+  <!-- DIRECTORIO -->
+  <div class="view" id="view-directorio">
+    <div class="view-header">
+      <div class="view-title">Directorio</div>
+      <button class="btn-primary" onclick="openFormContacto()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>Nuevo</button>
+    </div>
+    <div class="search-wrap">
+      <div class="search-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></div>
+      <input class="search-box" id="dir-search" placeholder="Nombre, empresa, rol..." oninput="renderDirectorio()">
+    </div>
+    <div class="chip-row">
+      <button class="chip active" onclick="setDirF('todos',this)">Todos</button>
+      <button class="chip" onclick="setDirF('campos',this)">Campos</button>
+      <button class="chip" onclick="setDirF('exportadoras',this)">Exportadoras</button>
+      <button class="chip" onclick="setDirF('administradores',this)">Administradores</button>
+      <button class="chip" onclick="setDirF('duenos',this)">Dueños</button>
+      <button class="chip" onclick="setDirF('asesores',this)">Asesores</button>
+    </div>
+    <div id="dir-list"></div>
+  </div>
+
+  <!-- PENDIENTES -->
+  <div class="view" id="view-pendientes">
+    <div class="view-header"><div class="view-title">Pendientes</div></div>
+    <div class="chip-row">
+      <button class="chip active" onclick="setPendF('activos',this)">Activos</button>
+      <button class="chip" onclick="setPendF('enviados',this)">Enviados</button>
+      <button class="chip" onclick="setPendF('todos',this)">Todos</button>
+    </div>
+    <div style="padding:0 16px" id="pends-list"></div>
+  </div>
+</div>
+
+<!-- MODAL CAMPO -->
+<div class="modal-overlay" id="modal-campo">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <div style="flex:1;padding-right:10px"><div class="modal-title" id="mc-nombre"></div><div style="font-size:12px;color:var(--text2);margin-top:2px" id="mc-sub"></div></div>
+      <button class="modal-close" onclick="closeModal('modal-campo')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+    </div>
+    <div class="modal-section"><div class="sec-title">Información</div><div id="mc-info"></div></div>
+    <div class="modal-section" id="mc-cultivos-sec"><div class="sec-title">Cultivos</div><div id="mc-cultivos"></div></div>
+    <div class="modal-section" id="mc-rs-sec"><div class="sec-title">Razones sociales</div><div id="mc-rs"></div></div>
+    <div class="modal-section" id="mc-contactos-sec"><div class="sec-title">Contactos</div><div id="mc-contactos"></div></div>
+    <div class="modal-section" id="mc-prep-sec"><div class="sec-title">Preparación próxima visita</div><div id="mc-prep"></div></div>
+    <div class="modal-section"><div class="sec-title">Historial de visitas</div><div id="mc-visitas"></div></div>
+    <div class="btn-row">
+      <button class="btn-full" onclick="openFormVisita(currentCampoId)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>Registrar visita</button>
+      <button class="btn-outline" id="mc-maps-btn" onclick="abrirMaps()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg></button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CONTACTO -->
+<div class="modal-overlay" id="modal-contacto">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <div style="flex:1;padding-right:10px"><div class="modal-title" id="mct-nombre"></div><div style="font-size:12px;color:var(--text2);margin-top:2px" id="mct-sub"></div></div>
+      <button class="modal-close" onclick="closeModal('modal-contacto')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+    </div>
+    <div class="modal-section"><div id="mct-info"></div></div>
+    <div class="modal-section" id="mct-visitas-sec"><div class="sec-title">Historial de visitas</div><div id="mct-visitas"></div></div>
+    <div class="btn-row" id="mct-btn-row" style="display:none">
+      <button class="btn-full" onclick="openFormVisita(currentCampoId)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>Registrar visita</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL MINUTA -->
+<div class="modal-overlay" id="modal-minuta">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-header"><div class="modal-title">Minuta de visita</div><button class="modal-close" onclick="closeModal('modal-minuta')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button></div>
+    <div class="modal-section">
+      <div class="minuta-box" id="minuta-text"></div>
+      <button class="btn-copy" onclick="copiarMinuta()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="9" y="9" width="13" height="13" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>Copiar para WhatsApp / Email</button>
+    </div>
+  </div>
+</div>
+
+<!-- FORM VISITA -->
+<div class="form-modal" id="form-visita">
+  <div class="form-inner">
+    <div class="modal-handle"></div>
+    <div class="modal-header"><div class="modal-title">Nueva visita</div><button class="modal-close" onclick="closeModal('form-visita')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button></div>
+    <div class="form-section">
+      <label class="form-label">Campo / Contacto</label>
+      <select class="form-input" id="fv-cliente" onchange="updateFVRs()"></select>
+      <label class="form-label">Razón social (opcional)</label>
+      <select class="form-input" id="fv-rs"><option value="" selected="selected">Sin especificar</option></select>
+      <label class="form-label">Fecha</label>
+      <input type="date" class="form-input" id="fv-fecha">
+      <label class="form-label">Preparación / notas previas</label>
+      <textarea class="form-textarea" id="fv-prep" placeholder="¿Qué querías plantear o preguntar?" style="min-height:55px"></textarea>
+      <label class="form-label">Resumen de la reunión</label>
+      <textarea class="form-textarea" id="fv-resumen" placeholder="¿Qué se habló? ¿Estado del campo? ¿Temas importantes..."></textarea>
+      <label class="form-label">Próxima visita sugerida</label>
+      <div class="radio-row" id="prox-opts">
+        <button class="radio-opt" onclick="selProx(this,'15')">15 días</button>
+        <button class="radio-opt sel" onclick="selProx(this,'30')">30 días</button>
+        <button class="radio-opt" onclick="selProx(this,'60')">60 días</button>
+        <button class="radio-opt" onclick="selProx(this,'90')">90 días</button>
+        <button class="radio-opt" onclick="selProx(this,'0')">Sin fecha</button>
+      </div>
+      <div class="form-divider">Pendientes — cosas que debes enviar</div>
+      <div class="pend-add-row">
+        <input class="pend-input-form" id="pend-new-input" placeholder="Ej: Enviar cotización variedad X..." onkeydown="if(event.key==='Enter')addPF()">
+        <button class="btn-add" onclick="addPF()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></button>
+      </div>
+      <div class="pend-list-form" id="pend-form-list"></div>
+    </div>
+    <div class="form-actions">
+      <button class="btn-cancel" onclick="closeModal('form-visita')">Cancelar</button>
+      <button class="btn-save" onclick="saveVisita()">Guardar visita</button>
+    </div>
+  </div>
+</div>
+
+<!-- FORM CAMPO -->
+<div class="form-modal" id="form-campo">
+  <div class="form-inner">
+    <div class="modal-handle"></div>
+    <div class="modal-header"><div class="modal-title">Nuevo campo</div><button class="modal-close" onclick="closeModal('form-campo')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button></div>
+    <div class="form-section">
+      <label class="form-label">Tipo</label>
+      <select class="form-input" id="fc-tipo" onchange="toggleFCTipo()">
+        <option value="independiente" selected="selected">Campo independiente</option>
+        <option value="exportadora">Bajo exportadora</option>
+      </select>
+      <div id="fc-exp-row" style="display:none">
+        <label class="form-label">Exportadora</label>
+        <input type="text" class="form-input" id="fc-exportadora" placeholder="Nombre de la exportadora">
+      </div>
+      <label class="form-label">Nombre del campo</label>
+      <input type="text" class="form-input" id="fc-nombre" placeholder="Ej: Campo El Roble">
+      <label class="form-label">Zona / Región</label>
+      <input type="text" class="form-input" id="fc-zona" placeholder="Ej: Valle del Maipo, Rancagua...">
+      <label class="form-label">Superficie total (há)</label>
+      <input type="number" class="form-input" id="fc-sup" placeholder="Ej: 150">
+      <label class="form-label">Notas generales</label>
+      <textarea class="form-textarea" id="fc-notas" placeholder="Observaciones, características del campo..."></textarea>
+      <label class="form-label">Ubicación GPS / Link Maps</label>
+      <button class="btn-gps" onclick="capturarGPS()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"></circle><path d="M19.94 11a8 8 0 1 0 .06 1M12 2v2M12 20v2M2 12h2M20 12h2"></path></svg>Capturar mi ubicación actual</button>
+      <input type="text" class="form-input" id="fc-gps" placeholder="O pega un link de Google Maps...">
+      <div class="form-divider">Cultivos</div>
+      <div class="add-row">
+        <input class="add-input" id="fc-cultivo-nom" placeholder="Cultivo (ej: Cerezas)">
+        <input class="add-input" id="fc-cultivo-sup" placeholder="Há" style="max-width:70px">
+        <button class="btn-add" onclick="addCultivo()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></button>
+      </div>
+      <div class="tag-list" id="fc-cultivos-list"></div>
+      <div class="form-divider">Razones sociales</div>
+      <div class="add-row">
+        <input class="add-input" id="fc-rs-nom" placeholder="Razón social">
+        <input class="add-input" id="fc-rs-rut" placeholder="RUT" style="max-width:110px">
+        <button class="btn-add" onclick="addRS()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></button>
+      </div>
+      <div class="tag-list" id="fc-rs-list"></div>
+      <div class="form-divider">Contactos del campo</div>
+      <div class="add-row">
+        <input class="add-input" id="fc-cont-nom" placeholder="Nombre">
+        <select class="add-input" id="fc-cont-rol" style="max-width:110px">
+          <option value="Administrador" selected="selected">Admin</option>
+          <option value="Dueño">Dueño</option>
+          <option value="Asesor">Asesor</option>
+          <option value="Otro">Otro</option>
+        </select>
+        <button class="btn-add" onclick="addContactoCampo()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></button>
+      </div>
+      <div class="tag-list" id="fc-contactos-list"></div>
+    </div>
+    <div class="form-actions">
+      <button class="btn-cancel" onclick="closeModal('form-campo')">Cancelar</button>
+      <button class="btn-save" onclick="saveCampo()">Guardar campo</button>
+    </div>
+  </div>
+</div>
+
+<!-- FORM CONTACTO -->
+<div class="form-modal" id="form-contacto">
+  <div class="form-inner">
+    <div class="modal-handle"></div>
+    <div class="modal-header"><div class="modal-title">Nuevo contacto</div><button class="modal-close" onclick="closeModal('form-contacto')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button></div>
+    <div class="form-section">
+      <label class="form-label">Tipo</label>
+      <select class="form-input" id="fct-tipo">
+        <option value="Administrador" selected="selected">Administrador</option>
+        <option value="Dueño">Dueño</option>
+        <option value="Asesor (cliente)">Asesor (lo visito como cliente)</option>
+        <option value="Asesor (apoyo)">Asesor (contacto de apoyo)</option>
+        <option value="Exportadora">Exportadora</option>
+      </select>
+      <label class="form-label">Nombre</label>
+      <input type="text" class="form-input" id="fct-nombre" placeholder="Nombre completo o razón social">
+      <label class="form-label">Empresa / Campo asociado</label>
+      <input type="text" class="form-input" id="fct-empresa" placeholder="Ej: Exportadora Los Andes...">
+      <label class="form-label">Teléfono</label>
+      <input type="tel" class="form-input" id="fct-tel" placeholder="+56 9 ...">
+      <label class="form-label">Email</label>
+      <input type="email" class="form-input" id="fct-email" placeholder="correo@ejemplo.com">
+      <label class="form-label">Notas</label>
+      <textarea class="form-textarea" id="fct-notas" placeholder="Especialidad, observaciones..."></textarea>
+    </div>
+    <div class="form-actions">
+      <button class="btn-cancel" onclick="closeModal('form-contacto')">Cancelar</button>
+      <button class="btn-save" onclick="saveContacto()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Google Identity Services -->
+<script src="APK%20Agro_files/client"></script>
+<script>
+// ─── CONFIG ───────────────────────────────────────────────
+const CLIENT_ID = '382154755475-6gtp8p6q7353b5a5sft1tsgpvfcvagdd.apps.googleusercontent.com';
+const SCOPES = 'https://www.googleapis.com/auth/drive.file';
+const FILE_NAME = 'apk-agro-data.json';
+
+// ─── STATE ────────────────────────────────────────────────
+let db = {campos:[], visitas:[], pendientes:[], contactos:[]};
+let accessToken = null;
+let driveFileId = null;
+let currentCampoId = null;
+let pendFormList = [];
+let proxDias = 30;
+let pendFiltro = 'activos';
+let dirFiltro = 'todos';
+let fcCultivos = [], fcRS = [], fcContactos = [];
+let currentMapsUrl = '';
+let syncTimeout = null;
+
+// ─── GOOGLE AUTH ──────────────────────────────────────────
+function iniciarLogin() {
+  if (typeof google === 'undefined' || !google.accounts) {
+    alert('Cargando Google... espera un momento y vuelve a intentar.');
+    return;
+  }
+  try {
+    const client = google.accounts.oauth2.initTokenClient({
+      client_id: CLIENT_ID,
+      scope: SCOPES,
+      callback: async (resp) => {
+        if (resp.error) { alert('Error al conectar con Google: ' + resp.error); return; }
+        accessToken = resp.access_token;
+        localStorage.setItem('apkagro_token', accessToken);
+        mostrarApp();
+        await cargarDesdeDrive();
+      }
+    });
+    client.requestAccessToken();
+  } catch(e) {
+    alert('Error iniciando login: ' + e.message);
+  }
+}
+
+function mostrarApp() {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app-screen').style.display = 'flex';
+  document.getElementById('app-screen').style.flexDirection = 'column';
+  const ahora = new Date();
+  const dias = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+  const meses = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  document.getElementById('topbar-date').textContent = `${dias[ahora.getDay()]} ${ahora.getDate()} ${meses[ahora.getMonth()]}`;
+  renderDashboard();
+}
+
+// ─── DRIVE SYNC ───────────────────────────────────────────
+function showSyncStatus(msg, isError=false) {
+  const el = document.getElementById('sync-status');
+  el.textContent = msg;
+  el.className = 'sync-status show' + (isError ? ' error' : '');
+  setTimeout(() => el.className = 'sync-status', 3000);
+}
+
+async function buscarArchivoDrive() {
+  const r = await fetch(
+    `https://www.googleapis.com/drive/v3/files?q=name='${FILE_NAME}' and trashed=false&spaces=drive&fields=files(id,name)`,
+    { headers: { Authorization: `Bearer ${accessToken}` } }
+  );
+  const data = await r.json();
+  if (data.files && data.files.length > 0) return data.files[0].id;
+  return null;
+}
+
+async function cargarDesdeDrive() {
+  if (!accessToken) return;
+  showSyncStatus('Cargando datos desde Drive...');
+  const btn = document.getElementById('btn-sync');
+  btn.classList.add('syncing');
+  try {
+    driveFileId = await buscarArchivoDrive();
+    if (driveFileId) {
+      const r = await fetch(
+        `https://www.googleapis.com/drive/v3/files/${driveFileId}?alt=media`,
+        { headers: { Authorization: `Bearer ${accessToken}` } }
+      );
+      const data = await r.json();
+      if (data.campos) db = data;
+      showSyncStatus('✓ Datos sincronizados desde Drive');
+    } else {
+      // Archivo no existe aún, cargar demo
+      cargarDemo();
+      await guardarEnDrive();
+      showSyncStatus('✓ Datos iniciales creados en Drive');
+    }
+  } catch(e) {
+    // Intentar localStorage como fallback
+    const local = localStorage.getItem('apkagro_v3');
+    if (local) db = JSON.parse(local);
+    else cargarDemo();
+    showSyncStatus('Sin conexión — usando datos locales', true);
+  }
+  btn.classList.remove('syncing');
+  renderDashboard();
+}
+
+async function guardarEnDrive() {
+  if (!accessToken) { guardarLocal(); return; }
+  guardarLocal();
+  const content = JSON.stringify(db);
+  const blob = new Blob([content], {type: 'application/json'});
+  try {
+    if (driveFileId) {
+      await fetch(`https://www.googleapis.com/upload/drive/v3/files/${driveFileId}?uploadType=media`, {
+        method: 'PATCH',
+        headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+        body: content
+      });
+    } else {
+      const meta = { name: FILE_NAME, mimeType: 'application/json' };
+      const form = new FormData();
+      form.append('metadata', new Blob([JSON.stringify(meta)], {type:'application/json'}));
+      form.append('file', blob);
+      const r = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${accessToken}` },
+        body: form
+      });
+      const data = await r.json();
+      driveFileId = data.id;
+    }
+  } catch(e) { /* silencioso */ }
+}
+
+async function syncDrive() {
+  const btn = document.getElementById('btn-sync');
+  btn.classList.add('syncing');
+  await cargarDesdeDrive();
+  btn.classList.remove('syncing');
+}
+
+function guardarLocal() { try { localStorage.setItem('apkagro_v3', JSON.stringify(db)); } catch(e){} }
+
+function saveDB() {
+  guardarLocal();
+  clearTimeout(syncTimeout);
+  syncTimeout = setTimeout(() => guardarEnDrive(), 1500);
+}
+
+// ─── DEMO DATA ────────────────────────────────────────────
+function cargarDemo() {
+  const h = new Date();
+  const f5 = new Date(h); f5.setDate(h.getDate()-5);
+  const f38 = new Date(h); f38.setDate(h.getDate()-38);
+  const f12 = new Date(h); f12.setDate(h.getDate()-12);
+  const fd5 = f5.toISOString().split('T')[0];
+  const fd38 = f38.toISOString().split('T')[0];
+  const fd12 = f12.toISOString().split('T')[0];
+  db = {
+    campos: [
+      {id:'c1',tipo:'exportadora',exportadora:'Exportadora Los Andes',nombre:'Campo Norte',zona:'Valle del Maipo',superficie:'120',gps:'https://maps.google.com/?q=-33.8,-70.7',notas:'Principal productor de cerezas.',cultivos:[{nom:'Cerezas',sup:'80'},{nom:'Duraznos',sup:'40'}],razonSocial:[{nom:'Agrícola Norte SpA',rut:'76.123.456-7'}],contactos:[{nom:'Carlos Muñoz',rol:'Administrador'},{nom:'Don Pedro Arriagada',rol:'Dueño'}]},
+      {id:'c2',tipo:'exportadora',exportadora:'Exportadora Los Andes',nombre:'Campo Sur',zona:'Valle del Maipo',superficie:'85',gps:'',notas:'Proyecto de expansión 2025.',cultivos:[{nom:'Arándanos',sup:'85'}],razonSocial:[{nom:'Frutícola Sur Ltda.',rut:'76.555.111-2'}],contactos:[{nom:'Patricia Vega',rol:'Administrador'}]},
+      {id:'c3',tipo:'independiente',exportadora:'',nombre:'Fundo El Tranque',zona:'Rancagua',superficie:'200',gps:'',notas:'Trabaja con varios exportadores.',cultivos:[{nom:'Uva de mesa',sup:'150'},{nom:'Peras',sup:'50'}],razonSocial:[],contactos:[{nom:'Roberto Soto',rol:'Administrador'},{nom:'Familia Soto',rol:'Dueño'}]},
+      {id:'c4',tipo:'exportadora',exportadora:'Agrícola Del Valle',nombre:'Predio Las Lomas',zona:'San Felipe',superficie:'60',gps:'',notas:'Primera temporada.',cultivos:[{nom:'Paltas',sup:'60'}],razonSocial:[{nom:'Paltas Del Valle SpA',rut:'76.333.222-1'}],contactos:[{nom:'Ana Contreras',rol:'Administrador'}]},
+    ],
+    visitas: [
+      {id:'v1',clienteId:'c1',rs:'Agrícola Norte SpA',fecha:fd5,prep:'Revisar resultados temporada cerezas.',resumen:'Carlos contento con resultados. Interés en control de mosca.',proximaVisita:sumarDias(fd5,30),pendIds:['p1','p2']},
+      {id:'v2',clienteId:'c2',rs:'',fecha:fd38,prep:'',resumen:'Primera visita. Patricia confirma expansión 15 há.',proximaVisita:'',pendIds:['p3']},
+      {id:'v3',clienteId:'c3',rs:'',fecha:fd12,prep:'Consultar por poscosecha.',resumen:'Roberto interesado en poscosecha residuo cero.',proximaVisita:sumarDias(fd12,45),pendIds:['p4','p5']},
+    ],
+    pendientes: [
+      {id:'p1',clienteId:'c1',visitaId:'v1',texto:'Ficha técnica control mosca de la fruta',enviado:false,fecha:fd5,notaEnvio:''},
+      {id:'p2',clienteId:'c1',visitaId:'v1',texto:'Cotización temporada completa cerezas',enviado:true,fecha:fd5,notaEnvio:'Envié PDF por email mismo día'},
+      {id:'p3',clienteId:'c2',visitaId:'v2',texto:'Programa fertilización ampliación 15 há arándanos',enviado:false,fecha:fd38,notaEnvio:''},
+      {id:'p4',clienteId:'c3',visitaId:'v3',texto:'Catálogo poscosecha residuo cero',enviado:false,fecha:fd12,notaEnvio:''},
+      {id:'p5',clienteId:'c3',visitaId:'v3',texto:'Contacto asesor técnico zona Rancagua',enviado:false,fecha:fd12,notaEnvio:''},
+    ],
+    contactos: [
+      {id:'ct1',tipo:'Asesor (cliente)',nombre:'Ing. Fernando Rivas',empresa:'Consultoría AgriTech',tel:'+56 9 6677 8899',email:'frivas@agritech.cl',notas:'Especialista frutales.'},
+      {id:'ct2',tipo:'Asesor (apoyo)',nombre:'Dra. Mónica Pereira',empresa:'INIA',tel:'+56 9 5544 3322',email:'mpereira@inia.cl',notas:'Investigadora variedades.'},
+    ]
+  };
+}
+
+// ─── HELPERS ──────────────────────────────────────────────
+function uid() { return '_' + Math.random().toString(36).substr(2,9); }
+function hoy() { return new Date().toISOString().split('T')[0]; }
+function diasDesde(f) { if(!f) return 9999; return Math.floor((new Date()-new Date(f))/864e5); }
+function sumarDias(f, n) { const d = new Date(f); d.setDate(d.getDate()+parseInt(n)); return d.toISOString().split('T')[0]; }
+function iniciales(n) { return (n||'?').split(' ').slice(0,2).map(x=>x[0]||'').join('').toUpperCase(); }
+function ultimaVisita(id) { return db.visitas.filter(v=>v.clienteId===id).sort((a,b)=>new Date(b.fecha)-new Date(a.fecha))[0]||null; }
+function pendActivos(id) { return db.pendientes.filter(p=>p.clienteId===id&&!p.enviado); }
+
+// ─── VIEWS ────────────────────────────────────────────────
+function showView(v) {
+  document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(x=>x.classList.remove('active'));
+  document.getElementById('view-'+v).classList.add('active');
+  document.getElementById('nav-'+v).classList.add('active');
+  if(v==='dashboard') renderDashboard();
+  if(v==='campos') renderCampos();
+  if(v==='directorio') renderDirectorio();
+  if(v==='pendientes') renderPendientes();
+}
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+
+// ─── DASHBOARD ────────────────────────────────────────────
+function renderDashboard() {
+  const ahora = new Date();
+  const sinVisita = db.campos.filter(c=>{const uv=ultimaVisita(c.id);return !uv||diasDesde(uv.fecha)>30;});
+  const pa = db.pendientes.filter(p=>!p.enviado);
+  const mes = db.visitas.filter(v=>{const d=new Date(v.fecha);return d.getMonth()===ahora.getMonth()&&d.getFullYear()===ahora.getFullYear();});
+  document.getElementById('s-campos').textContent = db.campos.length;
+  document.getElementById('s-pend').textContent = pa.length;
+  document.getElementById('s-aten').textContent = sinVisita.length;
+  document.getElementById('s-mes').textContent = mes.length;
+  const proximas = db.visitas.filter(v=>v.proximaVisita&&new Date(v.proximaVisita)>=ahora).sort((a,b)=>new Date(a.proximaVisita)-new Date(b.proximaVisita)).slice(0,3);
+  document.getElementById('dash-proximas').innerHTML = proximas.length===0 ? '<div style="font-size:12px;color:var(--text3);padding:4px 0 8px">Sin visitas programadas</div>' :
+    proximas.map(v=>{const c=db.campos.find(x=>x.id===v.clienteId);const dias=Math.ceil((new Date(v.proximaVisita)-ahora)/864e5);
+      return `<div class="visit-card" onclick="openModalCampo('${v.clienteId}')"><div class="visit-card-header"><div class="visit-card-name">${c?c.nombre:'?'}</div><span class="prox-badge">En ${dias}d</span></div><div class="visit-card-text">${v.proximaVisita}</div></div>`;}).join('');
+  document.getElementById('dash-alerts').innerHTML = sinVisita.length===0 ? '<div style="font-size:12px;color:var(--text3);padding:4px 0 8px">✓ Todos visitados recientemente</div>' :
+    sinVisita.map(c=>{const uv=ultimaVisita(c.id);const dias=uv?diasDesde(uv.fecha):null;const admins=(c.contactos||[]).filter(x=>x.rol==='Administrador').map(x=>x.nom).join(', ')||'Sin admin';
+      return `<div class="alert-card" onclick="openModalCampo('${c.id}')"><div class="alert-card-title">${c.nombre}</div><div class="alert-card-sub">${uv?`Hace ${dias} días · ${admins}`:'Sin visitas · '+admins}</div></div>`;}).join('');
+  const recientes = [...db.visitas].sort((a,b)=>new Date(b.fecha)-new Date(a.fecha)).slice(0,3);
+  document.getElementById('dash-visits').innerHTML = recientes.length===0 ? '<div style="font-size:12px;color:var(--text3);padding:4px 0">Sin visitas aún</div>' :
+    recientes.map(v=>{const c=db.campos.find(x=>x.id===v.clienteId);
+      return `<div class="visit-card" onclick="openModalCampo('${v.clienteId}')"><div class="visit-card-header"><div class="visit-card-name">${c?c.nombre:'?'}</div><div class="visit-card-date">${v.fecha}</div></div><div class="visit-card-text">${v.resumen.substring(0,90)}${v.resumen.length>90?'...':''}</div></div>`;}).join('');
+}
+
+// ─── CAMPOS ───────────────────────────────────────────────
+function renderCampos() {
+  const q = (document.getElementById('campos-search').value||'').toLowerCase();
+  let campos = db.campos;
+  if(q) campos = campos.filter(c=>c.nombre.toLowerCase().includes(q)||(c.exportadora||'').toLowerCase().includes(q)||(c.zona||'').toLowerCase().includes(q)||(c.contactos||[]).some(ct=>ct.nom.toLowerCase().includes(q))||(c.cultivos||[]).some(cu=>cu.nom.toLowerCase().includes(q))||(c.razonSocial||[]).some(r=>r.nom.toLowerCase().includes(q)));
+  if(!campos.length){document.getElementById('campos-list').innerHTML=`<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><p>${q?'Sin resultados para "'+q+'"':'Sin campos registrados.\nToca + Nuevo para comenzar.'}</p></div>`;return;}
+  document.getElementById('campos-list').innerHTML = campos.map(c=>{
+    const uv=ultimaVisita(c.id); const dias=uv?diasDesde(uv.fecha):null;
+    const pa=pendActivos(c.id);
+    const diasCls=dias===null||dias>30?'dias-warn':'dias-ok';
+    const diasTxt=dias===null?'Sin visitas':dias===0?'Hoy':dias===1?'Ayer':`Hace ${dias} días`;
+    const admins=(c.contactos||[]).filter(x=>x.rol==='Administrador').map(x=>x.nom).join(', ')||'Sin admin';
+    const cultPills=(c.cultivos||[]).map(cu=>`<span class="cultivo-pill">${cu.nom}${cu.sup?' · '+cu.sup+' há':''}</span>`).join('');
+    return `<div class="card" onclick="openModalCampo('${c.id}')"><div class="card-top"><div class="card-name">${c.nombre}</div><span class="badge ${c.tipo==='exportadora'?'badge-exp':'badge-ind'}">${c.tipo==='exportadora'?c.exportadora:'Independiente'}</span></div><div class="card-meta"><div class="card-meta-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>${admins}</div><div class="card-meta-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>${c.zona}${c.superficie?' · '+c.superficie+' há':''}</div></div>${cultPills?`<div class="cultivo-pills">${cultPills}</div>`:''}<div class="card-footer"><span class="${diasCls}">${diasTxt}</span>${pa.length?`<span class="pending-badge">${pa.length} pendiente${pa.length>1?'s':''}</span>`:'<span class="no-pending">✓ Al día</span>'}</div></div>`;
+  }).join('');
+}
+
+function openModalCampo(id) {
+  currentCampoId = id;
+  const c = db.campos.find(x=>x.id===id);
+  document.getElementById('mc-nombre').textContent = c.nombre;
+  document.getElementById('mc-sub').textContent = c.tipo==='exportadora'?'Exportadora: '+c.exportadora:'Campo independiente';
+  let info = `<div class="info-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg><span class="info-lbl">Zona</span><span class="info-val">${c.zona}</span></div>`;
+  if(c.superficie) info += `<div class="info-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z"/></svg><span class="info-lbl">Superficie</span><span class="info-val">${c.superficie} há</span></div>`;
+  if(c.notas) info += `<div class="info-row" style="align-items:flex-start"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" style="margin-top:1px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span class="info-lbl">Notas</span><span class="info-val" style="font-weight:400;color:var(--text2)">${c.notas}</span></div>`;
+  const uv = ultimaVisita(id);
+  if(uv&&uv.proximaVisita){const dias=Math.ceil((new Date(uv.proximaVisita)-new Date())/864e5);info+=`<div class="info-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><span class="info-lbl">Próxima</span><span class="info-val"><span class="prox-badge">${uv.proximaVisita} (en ${dias}d)</span></span></div>`;}
+  document.getElementById('mc-info').innerHTML = info;
+  const cultivos = c.cultivos||[];
+  document.getElementById('mc-cultivos-sec').style.display = cultivos.length?'block':'none';
+  document.getElementById('mc-cultivos').innerHTML = cultivos.map(cu=>`<div style="display:flex;justify-content:space-between;font-size:13px;padding:5px 0;border-bottom:1px solid var(--border)"><span>${cu.nom}</span><span style="color:var(--text2)">${cu.sup} há</span></div>`).join('');
+  const rs = c.razonSocial||[];
+  document.getElementById('mc-rs-sec').style.display = rs.length?'block':'none';
+  document.getElementById('mc-rs').innerHTML = rs.map(r=>`<div class="rs-item">${r.nom}${r.rut?`<div class="rs-rut">${r.rut}</div>`:''}</div>`).join('');
+  const contactos = c.contactos||[];
+  document.getElementById('mc-contactos-sec').style.display = contactos.length?'block':'none';
+  document.getElementById('mc-contactos').innerHTML = contactos.map(ct=>`<span class="contact-chip"><strong>${ct.nom}</strong> <span class="contact-chip-role">${ct.rol}</span></span>`).join('');
+  const uv2 = ultimaVisita(id);
+  document.getElementById('mc-prep-sec').style.display = uv2&&uv2.prep?'block':'none';
+  document.getElementById('mc-prep').innerHTML = uv2&&uv2.prep?`<div class="prep-box">${uv2.prep}</div>`:'';
+  const visitas = db.visitas.filter(v=>v.clienteId===id).sort((a,b)=>new Date(b.fecha)-new Date(a.fecha));
+  document.getElementById('mc-visitas').innerHTML = visitas.length===0 ? '<div style="font-size:13px;color:var(--text3)">Sin visitas registradas</div>' :
+    visitas.map(v=>{const pends=db.pendientes.filter(p=>p.visitaId===v.id);
+      return `<div class="visit-hist-item"><div class="visit-hist-dot"></div><div class="visit-hist-date">${v.fecha}${v.rs?' · '+v.rs:''}</div><div class="visit-hist-text">${v.resumen}</div>${pends.length?'<div>'+pends.map(p=>`<div class="visit-pend-item ${p.enviado?'sent':''}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor">${p.enviado?'<path d="M9 11l3 3L22 4"/>':'<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/>'}</svg>${p.texto}</div>${p.notaEnvio?`<div class="visit-pend-nota">→ ${p.notaEnvio}</div>`:''}`).join('')+'</div>':''}${v.proximaVisita?`<div style="font-size:11px;color:var(--blue);margin-top:5px">📅 Próxima: ${v.proximaVisita}</div>`:''}<button style="background:none;border:1px solid var(--border);border-radius:6px;padding:4px 9px;font-size:11px;color:var(--text2);cursor:pointer;margin-top:7px;font-family:var(--font)" onclick="verMinuta('${v.id}')">Ver minuta</button></div>`;}).join('');
+  currentMapsUrl = c.gps||'';
+  document.getElementById('mc-maps-btn').style.opacity = c.gps?'1':'0.4';
+  openModal('modal-campo');
+}
+
+function abrirMaps() { if(currentMapsUrl) window.open(currentMapsUrl,'_blank'); }
+
+function verMinuta(vid) {
+  const v = db.visitas.find(x=>x.id===vid);
+  const c = db.campos.find(x=>x.id===v.clienteId);
+  const pends = db.pendientes.filter(p=>p.visitaId===vid);
+  let txt = `*Minuta de visita — APK Agro*\n━━━━━━━━━━━━━━━━━━━\n`;
+  txt += `📍 Campo: ${c?c.nombre:'?'}\n`;
+  if(v.rs) txt += `🏢 Razón social: ${v.rs}\n`;
+  txt += `📅 Fecha: ${v.fecha}\n\n`;
+  txt += `*Resumen:*\n${v.resumen}\n`;
+  if(pends.length){txt+=`\n*Compromisos pendientes:*\n`;pends.forEach((p,i)=>{txt+=`${i+1}. ${p.texto}${p.enviado?' ✅':''}\n`;if(p.notaEnvio)txt+=`   → ${p.notaEnvio}\n`;});}
+  if(v.proximaVisita) txt += `\n📅 Próxima visita: ${v.proximaVisita}`;
+  document.getElementById('minuta-text').textContent = txt;
+  closeModal('modal-campo');
+  openModal('modal-minuta');
+}
+
+function copiarMinuta() {
+  const txt = document.getElementById('minuta-text').textContent;
+  navigator.clipboard.writeText(txt).then(()=>{
+    const b = document.querySelector('.btn-copy');
+    const o = b.innerHTML;
+    b.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" style="width:15px;height:15px;stroke-width:2"><path d="M9 11l3 3L22 4"/></svg> ¡Copiado!';
+    setTimeout(()=>{b.innerHTML=o;},2000);
+  });
+}
+
+// ─── DIRECTORIO ───────────────────────────────────────────
+function setDirF(f,btn){dirFiltro=f;document.querySelectorAll('#view-directorio .chip').forEach(x=>x.classList.remove('active'));btn.classList.add('active');renderDirectorio();}
+
+function renderDirectorio() {
+  const q = (document.getElementById('dir-search').value||'').toLowerCase();
+  let items = [];
+  if(dirFiltro==='todos'||dirFiltro==='campos'){db.campos.forEach(c=>{if(!q||c.nombre.toLowerCase().includes(q)||(c.exportadora||'').toLowerCase().includes(q)||c.zona.toLowerCase().includes(q))items.push({_tipo:'campo',_sort:c.nombre,_id:c.id,...c});});}
+  if(dirFiltro==='todos'||dirFiltro==='exportadoras'){const exps=[...new Set(db.campos.filter(c=>c.exportadora).map(c=>c.exportadora))];exps.forEach(e=>{if(!items.find(i=>i.nombre===e)&&(!q||e.toLowerCase().includes(q)))items.push({_tipo:'exportadora',_sort:e,_id:'exp-'+e,nombre:e});});db.contactos.filter(x=>x.tipo==='Exportadora').forEach(ct=>{if(!items.find(i=>i.nombre===ct.nombre)&&(!q||ct.nombre.toLowerCase().includes(q)))items.push({_tipo:'exportadora',_sort:ct.nombre,_id:ct.id,...ct});});}
+  if(dirFiltro==='todos'||dirFiltro==='administradores'){const seen=new Set();db.campos.forEach(c=>(c.contactos||[]).filter(x=>x.rol==='Administrador').forEach(ct=>{const k=ct.nom;if(!seen.has(k)&&(!q||ct.nom.toLowerCase().includes(q)||c.nombre.toLowerCase().includes(q))){seen.add(k);items.push({_tipo:'administrador',_sort:ct.nom,_id:'adm-'+k,nombre:ct.nom,empresa:c.nombre});}}));}
+  if(dirFiltro==='todos'||dirFiltro==='duenos'){const seen=new Set();db.campos.forEach(c=>(c.contactos||[]).filter(x=>x.rol==='Dueño').forEach(ct=>{const k=ct.nom;if(!seen.has(k)&&(!q||ct.nom.toLowerCase().includes(q)||c.nombre.toLowerCase().includes(q))){seen.add(k);items.push({_tipo:'dueno',_sort:ct.nom,_id:'due-'+k,nombre:ct.nom,empresa:c.nombre});}}));}
+  if(dirFiltro==='todos'||dirFiltro==='asesores'){db.contactos.filter(x=>x.tipo.includes('Asesor')).forEach(ct=>{if(!q||ct.nombre.toLowerCase().includes(q)||(ct.empresa||'').toLowerCase().includes(q))items.push({_tipo:'asesor',_sort:ct.nombre,_id:ct.id,...ct});});}
+  items.sort((a,b)=>a._sort.localeCompare(b._sort,'es'));
+  if(!items.length){document.getElementById('dir-list').innerHTML=`<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg><p>Sin resultados</p></div>`;return;}
+  let html=''; let lastL='';
+  items.forEach(item=>{
+    const L = item._sort[0].toUpperCase();
+    if(L!==lastL){html+=`<div class="alpha-letter">${L}</div>`;lastL=L;}
+    const avCls = item._tipo==='campo'?'av-campo':item._tipo==='exportadora'?'av-exp':item._tipo==='administrador'?'av-admin':item._tipo==='dueno'?'av-dueno':'av-asesor';
+    const sub = item._tipo==='campo'?`${item.exportadora||'Independiente'} · ${item.zona}`:item._tipo==='exportadora'?'Exportadora':item._tipo==='administrador'?'Administrador · '+item.empresa:item._tipo==='dueno'?'Dueño · '+item.empresa:(item.tipo||'Asesor')+' · '+(item.empresa||'');
+    const onclick = item._tipo==='campo'?`openModalCampo('${item._id}')`:item._tipo==='asesor'?`openModalContacto('${item._id}')`:item._tipo==='administrador'||item._tipo==='dueno'?`alert('Contacto del campo ${item.empresa}')`:'' ;
+    html += `<div class="dir-item" ${onclick?`onclick="${onclick}"`:''}><div class="dir-avatar ${avCls}">${iniciales(item.nombre)}</div><div class="dir-info"><div class="dir-name">${item.nombre}</div><div class="dir-sub">${sub}</div></div><div class="dir-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="9 18 15 12 9 6"/></svg></div></div>`;
+  });
+  document.getElementById('dir-list').innerHTML = html;
+}
+
+function openModalContacto(id) {
+  const ct = db.contactos.find(x=>x.id===id); if(!ct) return;
+  currentCampoId = id;
+  document.getElementById('mct-nombre').textContent = ct.nombre;
+  document.getElementById('mct-sub').textContent = ct.tipo+(ct.empresa?' · '+ct.empresa:'');
+  let info = '';
+  if(ct.tel) info+=`<div class="info-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6.09 6.09l.91-.91a2 2 0 0 1 2.11-.45c.907.34 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg><span class="info-lbl">Teléfono</span><span class="info-val">${ct.tel}</span></div>`;
+  if(ct.email) info+=`<div class="info-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg><span class="info-lbl">Email</span><span class="info-val">${ct.email}</span></div>`;
+  if(ct.notas) info+=`<div class="info-row" style="align-items:flex-start"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" style="margin-top:1px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span class="info-lbl">Notas</span><span class="info-val" style="font-weight:400;color:var(--text2)">${ct.notas}</span></div>`;
+  document.getElementById('mct-info').innerHTML = info||'<div style="font-size:13px;color:var(--text3)">Sin datos adicionales</div>';
+  const esCliente = ct.tipo==='Asesor (cliente)';
+  document.getElementById('mct-visitas-sec').style.display = esCliente?'block':'none';
+  document.getElementById('mct-btn-row').style.display = esCliente?'flex':'none';
+  if(esCliente){const vs=db.visitas.filter(v=>v.clienteId===id).sort((a,b)=>new Date(b.fecha)-new Date(a.fecha));document.getElementById('mct-visitas').innerHTML=vs.length===0?'<div style="font-size:13px;color:var(--text3)">Sin visitas</div>':vs.map(v=>`<div class="visit-hist-item"><div class="visit-hist-dot"></div><div class="visit-hist-date">${v.fecha}</div><div class="visit-hist-text">${v.resumen}</div></div>`).join('');}
+  openModal('modal-contacto');
+}
+
+// ─── PENDIENTES ───────────────────────────────────────────
+function setPendF(f,btn){pendFiltro=f;document.querySelectorAll('#view-pendientes .chip').forEach(x=>x.classList.remove('active'));btn.classList.add('active');renderPendientes();}
+
+function renderPendientes() {
+  let pends = db.pendientes;
+  if(pendFiltro==='activos') pends=pends.filter(p=>!p.enviado);
+  if(pendFiltro==='enviados') pends=pends.filter(p=>p.enviado);
+  pends = pends.sort((a,b)=>new Date(a.fecha)-new Date(b.fecha));
+  if(!pends.length){document.getElementById('pends-list').innerHTML=`<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg><p>${pendFiltro==='activos'?'¡Todo al día!':'Sin pendientes enviados aún.'}</p></div>`;return;}
+  document.getElementById('pends-list').innerHTML = pends.map(p=>{
+    const c = db.campos.find(x=>x.id===p.clienteId)||db.contactos.find(x=>x.id===p.clienteId);
+    return `<div class="pend-card ${p.enviado?'done':''}"><div class="pend-client">${c?c.nombre:'?'}</div><div class="pend-text">${p.texto}</div>${p.notaEnvio?`<div class="pend-nota">→ ${p.notaEnvio}</div>`:''}<div class="pend-meta"><span class="pend-date">${p.fecha}</span><button class="btn-done" onclick="togglePend('${p.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 11l3 3L22 4"/></svg>${p.enviado?'Enviado':'Marcar enviado'}</button></div>${!p.enviado?`<input class="pend-nota-input" placeholder="Nota de envío (opcional)..." value="${p.notaEnvio||''}" onchange="setNotaEnvio('${p.id}',this.value)">`:''}</div>`;
+  }).join('');
+}
+function togglePend(id){const p=db.pendientes.find(x=>x.id===id);if(p){p.enviado=!p.enviado;saveDB();renderPendientes();}}
+function setNotaEnvio(id,val){const p=db.pendientes.find(x=>x.id===id);if(p){p.notaEnvio=val;saveDB();}}
+
+// ─── FORM VISITA ──────────────────────────────────────────
+function updateFVRs() {
+  const id = document.getElementById('fv-cliente').value;
+  const c = db.campos.find(x=>x.id===id);
+  const rs = c?(c.razonSocial||[]):[];
+  document.getElementById('fv-rs').innerHTML = '<option value="">Sin especificar</option>'+rs.map(r=>`<option value="${r.nom}">${r.nom}</option>`).join('');
+}
+
+function openFormVisita(clienteId) {
+  closeModal('modal-campo'); closeModal('modal-contacto');
+  const todos = [...db.campos, ...db.contactos.filter(x=>x.tipo==='Asesor (cliente)')];
+  document.getElementById('fv-cliente').innerHTML = todos.map(c=>`<option value="${c.id}" ${c.id===clienteId?'selected':''}>${c.nombre}</option>`).join('');
+  updateFVRs();
+  document.getElementById('fv-fecha').value = hoy();
+  document.getElementById('fv-prep').value = '';
+  document.getElementById('fv-resumen').value = '';
+  proxDias = 30;
+  document.querySelectorAll('.radio-opt').forEach(b=>{b.classList.toggle('sel',b.textContent==='30 días');});
+  pendFormList = []; document.getElementById('pend-form-list').innerHTML=''; document.getElementById('pend-new-input').value='';
+  document.getElementById('form-visita').classList.add('open');
+}
+function selProx(btn,dias){proxDias=parseInt(dias);document.querySelectorAll('.radio-opt').forEach(b=>b.classList.remove('sel'));btn.classList.add('sel');}
+function addPF(){const inp=document.getElementById('pend-new-input');const t=inp.value.trim();if(!t)return;pendFormList.push(t);inp.value='';renderPF();}
+function renderPF(){document.getElementById('pend-form-list').innerHTML=pendFormList.map((t,i)=>`<div class="pend-form-item">${t}<button class="btn-rem" onclick="pendFormList.splice(${i},1);renderPF()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>`).join('');}
+
+function saveVisita() {
+  const clienteId = document.getElementById('fv-cliente').value;
+  const resumen = document.getElementById('fv-resumen').value.trim();
+  if(!resumen){alert('Escribe un resumen de la visita');return;}
+  const fecha = document.getElementById('fv-fecha').value;
+  const prox = proxDias>0?sumarDias(fecha,proxDias):'';
+  const vid = uid();
+  const pids = pendFormList.map((t)=>{const pid=uid();db.pendientes.push({id:pid,clienteId,visitaId:vid,texto:t,enviado:false,fecha,notaEnvio:''});return pid;});
+  db.visitas.push({id:vid,clienteId,rs:document.getElementById('fv-rs').value,fecha,prep:document.getElementById('fv-prep').value.trim(),resumen,proximaVisita:prox,pendIds:pids});
+  saveDB(); closeModal('form-visita'); showView('dashboard');
+}
+
+// ─── FORM CAMPO ───────────────────────────────────────────
+function openFormCampo() {
+  ['fc-exportadora','fc-nombre','fc-zona','fc-notas','fc-gps'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('fc-sup').value='';
+  document.getElementById('fc-tipo').value='independiente';
+  document.getElementById('fc-exp-row').style.display='none';
+  fcCultivos=[]; fcRS=[]; fcContactos=[];
+  renderFCLists();
+  document.getElementById('form-campo').classList.add('open');
+}
+function toggleFCTipo(){document.getElementById('fc-exp-row').style.display=document.getElementById('fc-tipo').value==='exportadora'?'block':'none';}
+function addCultivo(){const n=document.getElementById('fc-cultivo-nom').value.trim();const s=document.getElementById('fc-cultivo-sup').value.trim();if(!n)return;fcCultivos.push({nom:n,sup:s});document.getElementById('fc-cultivo-nom').value='';document.getElementById('fc-cultivo-sup').value='';renderFCLists();}
+function addRS(){const n=document.getElementById('fc-rs-nom').value.trim();const r=document.getElementById('fc-rs-rut').value.trim();if(!n)return;fcRS.push({nom:n,rut:r});document.getElementById('fc-rs-nom').value='';document.getElementById('fc-rs-rut').value='';renderFCLists();}
+function addContactoCampo(){const n=document.getElementById('fc-cont-nom').value.trim();const r=document.getElementById('fc-cont-rol').value;if(!n)return;fcContactos.push({nom:n,rol:r});document.getElementById('fc-cont-nom').value='';renderFCLists();}
+function renderFCLists(){
+  document.getElementById('fc-cultivos-list').innerHTML=fcCultivos.map((c,i)=>`<div class="tag-item"><span>${c.nom}${c.sup?' · '+c.sup+' há':''}</span><button class="btn-rem" onclick="fcCultivos.splice(${i},1);renderFCLists()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>`).join('');
+  document.getElementById('fc-rs-list').innerHTML=fcRS.map((r,i)=>`<div class="tag-item"><span>${r.nom}${r.rut?' · '+r.rut:''}</span><button class="btn-rem" onclick="fcRS.splice(${i},1);renderFCLists()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>`).join('');
+  document.getElementById('fc-contactos-list').innerHTML=fcContactos.map((c,i)=>`<div class="tag-item"><span>${c.nom} · ${c.rol}</span><button class="btn-rem" onclick="fcContactos.splice(${i},1);renderFCLists()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>`).join('');
+}
+function capturarGPS(){
+  if(!navigator.geolocation){alert('Tu navegador no soporta geolocalización');return;}
+  navigator.geolocation.getCurrentPosition(pos=>{document.getElementById('fc-gps').value=`https://maps.google.com/?q=${pos.coords.latitude},${pos.coords.longitude}`;},()=>alert('No se pudo obtener la ubicación. Activa el GPS.'));
+}
+function saveCampo(){
+  const nombre=document.getElementById('fc-nombre').value.trim();
+  if(!nombre){alert('El nombre del campo es obligatorio');return;}
+  db.campos.push({id:uid(),tipo:document.getElementById('fc-tipo').value,exportadora:document.getElementById('fc-exportadora').value.trim(),nombre,zona:document.getElementById('fc-zona').value.trim(),superficie:document.getElementById('fc-sup').value,gps:document.getElementById('fc-gps').value.trim(),notas:document.getElementById('fc-notas').value.trim(),cultivos:[...fcCultivos],razonSocial:[...fcRS],contactos:[...fcContactos]});
+  saveDB(); closeModal('form-campo'); renderCampos();
+}
+
+// ─── FORM CONTACTO ────────────────────────────────────────
+function openFormContacto(){['fct-nombre','fct-empresa','fct-tel','fct-email','fct-notas'].forEach(id=>document.getElementById(id).value='');document.getElementById('fct-tipo').value='Administrador';document.getElementById('form-contacto').classList.add('open');}
+function saveContacto(){const nombre=document.getElementById('fct-nombre').value.trim();if(!nombre){alert('El nombre es obligatorio');return;}db.contactos.push({id:uid(),tipo:document.getElementById('fct-tipo').value,nombre,empresa:document.getElementById('fct-empresa').value.trim(),tel:document.getElementById('fct-tel').value.trim(),email:document.getElementById('fct-email').value.trim(),notas:document.getElementById('fct-notas').value.trim()});saveDB();closeModal('form-contacto');renderDirectorio();}
+
+// ─── INIT ─────────────────────────────────────────────────
+window.onload = function() {
+  // Intentar restaurar sesión con token guardado
+  const savedToken = localStorage.getItem('apkagro_token');
+  if(savedToken) {
+    accessToken = savedToken;
+    mostrarApp();
+    cargarDesdeDrive();
+  }
+};
+</script>
+
+
+</body></html>
