@@ -1,10 +1,810 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<title>test</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="APK Agro">
+<title>APK Agro</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#F4F1EB;--surface:#FFFFFF;--surface2:#EDEBE5;
+  --text:#1A1916;--text2:#6B6860;--text3:#A09E9A;
+  --accent:#2D6A4F;--accent2:#40916C;--accent-light:#D8F3DC;--accent-dark:#1B4332;
+  --warn:#B5451B;--warn-light:#FDE8E0;
+  --blue:#1A5F8A;--blue-light:#E1F0FA;
+  --purple:#5B2D8E;--purple-light:#F0EAF8;
+  --amber:#92400E;--amber-light:#FEF3C7;
+  --border:#E2DED8;--radius:12px;--radius-sm:8px;
+  --font:'DM Sans',sans-serif;--mono:'DM Mono',monospace;
+}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;font-size:15px}
+.app{max-width:480px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column}
+#login-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:32px 24px;text-align:center;background:var(--accent-dark)}
+.login-logo{font-size:36px;font-weight:600;color:#fff;letter-spacing:-1px;margin-bottom:6px}
+.login-logo span{color:#74C69D;font-weight:300}
+.login-sub{font-size:14px;color:#74C69D;margin-bottom:48px;font-family:var(--mono)}
+.login-card{background:#fff;border-radius:20px;padding:28px 24px;width:100%;max-width:340px}
+.login-card h2{font-size:18px;font-weight:600;margin-bottom:8px;color:var(--text)}
+.login-card p{font-size:13px;color:var(--text2);margin-bottom:24px;line-height:1.6}
+.btn-google{width:100%;background:#fff;border:1.5px solid var(--border);border-radius:var(--radius);padding:13px;font-family:var(--font);font-size:14px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;color:var(--text);text-decoration:none}
+.btn-google:hover{border-color:var(--accent);background:var(--accent-light)}
+.sync-status{position:fixed;top:0;left:0;right:0;background:var(--accent);color:#fff;font-size:12px;text-align:center;padding:6px;z-index:999;transform:translateY(-100%);transition:transform .3s}
+.sync-status.show{transform:translateY(0)}
+.sync-status.error{background:var(--warn)}
+.topbar{background:var(--accent-dark);padding:14px 16px 12px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.topbar-logo{font-size:17px;font-weight:600;color:#fff;letter-spacing:-0.3px}
+.topbar-logo span{color:#74C69D;font-weight:300}
+.topbar-right{display:flex;align-items:center;gap:10px}
+.topbar-date{font-size:11px;color:#74C69D;font-family:var(--mono)}
+.btn-sync{background:none;border:1px solid rgba(116,198,157,.4);border-radius:20px;color:#74C69D;font-size:11px;padding:4px 10px;cursor:pointer;font-family:var(--font);display:flex;align-items:center;gap:4px}
+.btn-sync svg{width:12px;height:12px;stroke-width:2}
+.btn-sync.syncing svg{animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.nav{background:var(--surface);border-bottom:1px solid var(--border);display:flex;position:sticky;top:49px;z-index:99}
+.nav-btn{flex:1;padding:11px 4px 9px;border:none;background:none;color:var(--text3);font-family:var(--font);font-size:10px;font-weight:500;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;border-bottom:2px solid transparent;transition:all .2s}
+.nav-btn.active{color:var(--accent);border-bottom-color:var(--accent)}
+.nav-btn svg{width:18px;height:18px;stroke-width:1.8}
+.view{display:none;flex:1;padding-bottom:20px}
+.view.active{display:block}
+.view-header{padding:18px 16px 10px;display:flex;align-items:center;justify-content:space-between}
+.view-title{font-size:20px;font-weight:600;letter-spacing:-0.5px}
+.btn-primary{background:var(--accent);color:#fff;border:none;border-radius:var(--radius-sm);padding:8px 13px;font-family:var(--font);font-size:13px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:5px}
+.btn-primary svg{width:15px;height:15px;stroke-width:2.5}
+.search-wrap{padding:0 16px 6px;position:relative}
+.search-icon{position:absolute;left:28px;top:50%;transform:translateY(-50%);color:var(--text3);pointer-events:none}
+.search-icon svg{width:14px;height:14px;stroke-width:2}
+.search-box{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:9px 12px 9px 34px;font-family:var(--font);font-size:14px;color:var(--text);outline:none}
+.search-hint{font-size:11px;color:var(--text3);padding:3px 16px 6px;font-style:italic}
+.chip-row{padding:2px 16px 10px;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}
+.chip-row::-webkit-scrollbar{display:none}
+.chip{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:5px 11px;font-size:12px;color:var(--text2);cursor:pointer;font-family:var(--font);white-space:nowrap;transition:all .15s}
+.chip.active{background:var(--accent);border-color:var(--accent);color:#fff}
+.dash-section{padding:12px 16px 0}
+.dash-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1.2px;color:var(--text3);margin-bottom:8px}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px;text-align:center}
+.stat-num{font-size:24px;font-weight:600;letter-spacing:-1px;color:var(--accent)}
+.stat-num.warn{color:var(--warn)}
+.stat-lbl{font-size:11px;color:var(--text2);margin-top:1px}
+.alert-card{background:var(--warn-light);border:1px solid #F5C6B3;border-radius:var(--radius);padding:10px 13px;margin-bottom:7px;cursor:pointer}
+.alert-card-title{font-weight:600;font-size:13px;color:var(--warn)}
+.alert-card-sub{font-size:11px;color:#8B3A1F;margin-top:2px}
+.visit-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:11px 13px;margin-bottom:7px;cursor:pointer}
+.visit-card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+.visit-card-name{font-weight:600;font-size:13px}
+.visit-card-date{font-size:11px;color:var(--text3);font-family:var(--mono)}
+.visit-card-text{font-size:12px;color:var(--text2);line-height:1.5}
+.prox-badge{display:inline-flex;align-items:center;gap:4px;background:var(--blue-light);color:var(--blue);font-size:11px;font-weight:500;padding:3px 8px;border-radius:20px}
+.card-list{padding:0 16px;display:flex;flex-direction:column;gap:8px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:13px 14px;cursor:pointer;transition:border-color .15s}
+.card:hover{border-color:var(--accent)}
+.card-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:7px}
+.card-name{font-weight:600;font-size:14px;line-height:1.3;flex:1}
+.badge{font-size:10px;font-weight:500;padding:3px 7px;border-radius:20px;white-space:nowrap;margin-left:7px;flex-shrink:0}
+.badge-exp{background:var(--blue-light);color:var(--blue)}
+.badge-ind{background:var(--accent-light);color:var(--accent-dark)}
+.card-meta{display:flex;flex-direction:column;gap:3px;margin-bottom:7px}
+.card-meta-row{display:flex;align-items:center;gap:5px;color:var(--text2);font-size:12px}
+.card-meta-row svg{width:12px;height:12px;stroke-width:2;color:var(--text3);flex-shrink:0}
+.cultivo-pills{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:7px}
+.cultivo-pill{background:var(--amber-light);color:var(--amber);font-size:10px;font-weight:500;padding:2px 8px;border-radius:20px}
+.card-footer{padding-top:8px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.dias-ok{color:var(--accent);font-size:11px}
+.dias-warn{color:var(--warn);font-size:11px;font-weight:600}
+.pending-badge{background:var(--warn-light);color:var(--warn);font-size:11px;font-weight:500;padding:3px 8px;border-radius:20px}
+.no-pending{font-size:11px;color:var(--accent)}
+.alpha-letter{font-size:10px;font-weight:600;color:var(--text3);padding:8px 16px 3px;letter-spacing:1px;font-family:var(--mono)}
+.dir-item{background:var(--surface);border-bottom:1px solid var(--border);padding:11px 16px;cursor:pointer;display:flex;align-items:center;gap:11px}
+.dir-item:first-of-type{border-top:1px solid var(--border)}
+.dir-item:hover{background:var(--surface2)}
+.dir-avatar{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex-shrink:0}
+.av-campo{background:var(--accent-light);color:var(--accent-dark)}
+.av-exp{background:var(--blue-light);color:var(--blue)}
+.av-admin{background:var(--amber-light);color:var(--amber)}
+.av-dueno{background:#FCE7F3;color:#9D174D}
+.av-asesor{background:var(--purple-light);color:var(--purple)}
+.dir-info{flex:1;min-width:0}
+.dir-name{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dir-sub{font-size:11px;color:var(--text3);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dir-arrow svg{width:13px;height:13px;stroke-width:2;color:var(--text3)}
+.pend-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;margin-bottom:7px}
+.pend-card.done{opacity:.5}
+.pend-client{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--accent);margin-bottom:3px}
+.pend-text{font-size:14px;color:var(--text);margin-bottom:4px;line-height:1.4}
+.pend-nota{font-size:11px;color:var(--text3);font-style:italic;margin-bottom:6px}
+.pend-meta{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.pend-date{font-size:11px;color:var(--text3);font-family:var(--mono)}
+.btn-done{background:none;border:1px solid var(--border);border-radius:var(--radius-sm);padding:4px 10px;font-size:11px;color:var(--text2);cursor:pointer;font-family:var(--font);display:flex;align-items:center;gap:4px}
+.btn-done svg{width:11px;height:11px;stroke-width:2}
+.pend-card.done .btn-done{background:var(--accent-light);border-color:var(--accent);color:var(--accent)}
+.pend-nota-input{width:100%;border:1px dashed var(--border);border-radius:var(--radius-sm);padding:5px 9px;font-family:var(--font);font-size:12px;color:var(--text);background:var(--bg);outline:none;margin-top:6px}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:flex-end}
+.modal-overlay.open{display:flex}
+.modal{background:var(--surface);border-radius:20px 20px 0 0;width:100%;max-height:93vh;overflow-y:auto;padding-bottom:36px}
+.modal-handle{width:34px;height:4px;background:var(--border);border-radius:2px;margin:11px auto 0}
+.modal-header{padding:13px 17px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:flex-start}
+.modal-title{font-size:16px;font-weight:600;letter-spacing:-0.3px;flex:1;padding-right:12px}
+.modal-close{background:none;border:none;cursor:pointer;color:var(--text2);padding:3px;flex-shrink:0}
+.modal-close svg{width:18px;height:18px;stroke-width:2}
+.modal-section{padding:13px 17px;border-bottom:1px solid var(--border)}
+.sec-title{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--text3);margin-bottom:9px}
+.info-row{display:flex;align-items:flex-start;gap:9px;margin-bottom:8px;font-size:13px}
+.info-row svg{width:14px;height:14px;stroke-width:1.8;color:var(--text3);flex-shrink:0;margin-top:1px}
+.info-lbl{color:var(--text2);min-width:72px;font-size:12px}
+.info-val{color:var(--text);font-weight:500;line-height:1.4;flex:1}
+.contact-chip{display:inline-flex;align-items:center;gap:5px;background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:4px 10px;font-size:12px;margin:2px 3px 2px 0}
+.contact-chip-role{font-size:10px;color:var(--text3)}
+.rs-item{background:var(--surface2);border-radius:var(--radius-sm);padding:7px 10px;margin-bottom:5px;font-size:13px}
+.rs-rut{font-size:11px;color:var(--text3);font-family:var(--mono);margin-top:1px}
+.visit-hist-item{border-left:2px solid var(--border);padding:0 0 13px 12px;position:relative;margin-left:5px}
+.visit-hist-item:last-child{padding-bottom:0}
+.visit-hist-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);position:absolute;left:-5px;top:3px;border:2px solid var(--surface)}
+.visit-hist-date{font-size:10px;color:var(--text3);font-family:var(--mono);margin-bottom:3px}
+.visit-hist-text{font-size:13px;color:var(--text);line-height:1.5;margin-bottom:5px}
+.visit-pend-item{font-size:12px;display:flex;align-items:flex-start;gap:5px;color:var(--text2);margin-bottom:3px}
+.visit-pend-item.sent{color:var(--accent);text-decoration:line-through;opacity:.6}
+.visit-pend-item svg{width:11px;height:11px;stroke-width:2;flex-shrink:0;margin-top:1px}
+.visit-pend-nota{font-size:10px;color:var(--text3);font-style:italic;margin-left:16px;margin-bottom:2px}
+.prep-box{background:var(--amber-light);border-radius:var(--radius-sm);padding:10px 12px;font-size:13px;color:var(--amber);line-height:1.5;font-style:italic}
+.btn-row{padding:13px 17px 0;display:flex;gap:8px}
+.btn-full{flex:1;background:var(--accent);color:#fff;border:none;border-radius:var(--radius);padding:12px;font-family:var(--font);font-size:14px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px}
+.btn-full svg{width:16px;height:16px;stroke-width:2}
+.btn-outline{background:none;border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;font-family:var(--font);font-size:13px;color:var(--text2);cursor:pointer;display:flex;align-items:center;gap:5px}
+.btn-outline svg{width:15px;height:15px;stroke-width:2}
+.form-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:300;align-items:flex-end}
+.form-modal.open{display:flex}
+.form-inner{background:var(--surface);border-radius:20px 20px 0 0;width:100%;max-height:96vh;overflow-y:auto;padding-bottom:44px}
+.form-section{padding:13px 17px}
+.form-label{font-size:11px;font-weight:600;color:var(--text2);margin-bottom:5px;display:block;text-transform:uppercase;letter-spacing:.5px}
+.form-input{width:100%;border:1px solid var(--border);border-radius:var(--radius-sm);padding:9px 11px;font-family:var(--font);font-size:14px;color:var(--text);background:var(--bg);outline:none;margin-bottom:10px}
+.form-input:focus{border-color:var(--accent)}
+.form-textarea{width:100%;border:1px solid var(--border);border-radius:var(--radius-sm);padding:9px 11px;font-family:var(--font);font-size:14px;color:var(--text);background:var(--bg);outline:none;resize:none;min-height:75px;margin-bottom:10px}
+.form-textarea:focus{border-color:var(--accent)}
+select.form-input{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236B6860' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 11px center}
+.form-divider{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--text3);padding:4px 0 8px;border-top:1px solid var(--border);margin-top:4px}
+.add-row{display:flex;gap:7px;margin-bottom:8px}
+.add-input{flex:1;border:1px solid var(--border);border-radius:var(--radius-sm);padding:9px 11px;font-family:var(--font);font-size:13px;color:var(--text);background:var(--bg);outline:none}
+.btn-add{background:var(--accent);color:#fff;border:none;border-radius:var(--radius-sm);padding:9px 12px;cursor:pointer;flex-shrink:0}
+.btn-add svg{width:16px;height:16px;stroke-width:2.5;display:block}
+.tag-list{display:flex;flex-direction:column;gap:5px;margin-bottom:8px}
+.tag-item{background:var(--surface2);border-radius:var(--radius-sm);padding:7px 11px;font-size:13px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.tag-item span{flex:1}
+.btn-rem{background:none;border:none;cursor:pointer;color:var(--text3);padding:2px;flex-shrink:0}
+.btn-rem svg{width:13px;height:13px;stroke-width:2}
+.form-actions{padding:12px 17px 0;display:flex;gap:8px}
+.btn-save{flex:1;background:var(--accent);color:#fff;border:none;border-radius:var(--radius);padding:13px;font-family:var(--font);font-size:14px;font-weight:500;cursor:pointer}
+.btn-cancel{background:none;border:1px solid var(--border);border-radius:var(--radius);padding:13px 14px;font-family:var(--font);font-size:13px;color:var(--text2);cursor:pointer}
+.pend-add-row{display:flex;gap:7px;margin-bottom:7px}
+.pend-input-form{flex:1;border:1px solid var(--border);border-radius:var(--radius-sm);padding:9px 11px;font-family:var(--font);font-size:13px;color:var(--text);background:var(--bg);outline:none}
+.pend-list-form{display:flex;flex-direction:column;gap:5px;margin-bottom:8px}
+.pend-form-item{background:var(--accent-light);border-radius:var(--radius-sm);padding:7px 11px;font-size:13px;color:var(--accent-dark);display:flex;align-items:center;justify-content:space-between;gap:8px}
+.btn-gps{background:var(--blue-light);color:var(--blue);border:1px solid #B3D5ED;border-radius:var(--radius-sm);padding:9px 12px;font-family:var(--font);font-size:13px;cursor:pointer;display:flex;align-items:center;gap:6px;margin-bottom:10px;width:100%}
+.btn-gps svg{width:15px;height:15px;stroke-width:2}
+.radio-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.radio-opt{border:1px solid var(--border);border-radius:20px;padding:6px 12px;font-size:12px;cursor:pointer;color:var(--text2);background:var(--surface);font-family:var(--font)}
+.radio-opt.sel{background:var(--accent);border-color:var(--accent);color:#fff}
+.empty-state{text-align:center;padding:32px 20px;color:var(--text3)}
+.empty-state svg{width:34px;height:34px;stroke-width:1.2;margin-bottom:10px;opacity:.35}
+.empty-state p{font-size:13px;line-height:1.6}
+.minuta-box{background:var(--surface2);border-radius:var(--radius-sm);padding:12px;font-size:12px;line-height:1.7;color:var(--text);font-family:var(--mono);white-space:pre-wrap;word-break:break-word;max-height:220px;overflow-y:auto;margin-bottom:10px}
+.btn-copy{background:var(--accent);color:#fff;border:none;border-radius:var(--radius-sm);padding:9px 14px;font-family:var(--font);font-size:13px;cursor:pointer;display:flex;align-items:center;gap:6px;width:100%;justify-content:center}
+.btn-copy svg{width:15px;height:15px;stroke-width:2}
+</style>
 </head>
 <body>
-<h1>funciona</h1>
-<script>alert('ok')</script>
+<div class="sync-status" id="sync-status"></div>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-logo">APK <span>Agro</span></div>
+  <div class="login-sub">Gestión de visitas en terreno</div>
+  <div class="login-card">
+    <h2>Bienvenido</h2>
+    <p>Conecta tu cuenta Google para sincronizar tus datos en todos tus dispositivos.</p>
+    <a id="btn-login" class="btn-google" href="#">
+      <svg width="20" height="20" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+      Conectar con Google Drive
+    </a>
+  </div>
+</div>
+
+<!-- APP -->
+<div class="app" id="app-screen" style="display:none">
+  <div class="topbar">
+    <div class="topbar-logo">APK <span>Agro</span></div>
+    <div class="topbar-right">
+      <div class="topbar-date" id="topbar-date"></div>
+      <button class="btn-sync" id="btn-sync" onclick="syncDrive()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+        Sincronizar
+      </button>
+    </div>
+  </div>
+  <nav class="nav">
+    <button class="nav-btn active" onclick="showView('dashboard')" id="nav-dashboard">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Inicio
+    </button>
+    <button class="nav-btn" onclick="showView('campos')" id="nav-campos">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Campos
+    </button>
+    <button class="nav-btn" onclick="showView('directorio')" id="nav-directorio">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>Directorio
+    </button>
+    <button class="nav-btn" onclick="showView('pendientes')" id="nav-pendientes">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Pendientes
+    </button>
+  </nav>
+  <div class="view active" id="view-dashboard">
+    <div class="view-header"><div class="view-title">Inicio</div></div>
+    <div class="dash-section"><div class="dash-label">Resumen</div>
+      <div class="stat-grid">
+        <div class="stat-card"><div class="stat-num" id="s-campos">0</div><div class="stat-lbl">Campos</div></div>
+        <div class="stat-card"><div class="stat-num warn" id="s-pend">0</div><div class="stat-lbl">Pendientes</div></div>
+        <div class="stat-card"><div class="stat-num warn" id="s-aten">0</div><div class="stat-lbl">Sin visitar +30d</div></div>
+        <div class="stat-card"><div class="stat-num" id="s-mes">0</div><div class="stat-lbl">Visitas este mes</div></div>
+      </div>
+    </div>
+    <div class="dash-section"><div class="dash-label">Próximas visitas</div><div id="dash-proximas"></div></div>
+    <div class="dash-section"><div class="dash-label">Requieren atención</div><div id="dash-alerts"></div></div>
+    <div class="dash-section"><div class="dash-label">Últimas visitas</div><div id="dash-visits"></div></div>
+    <div class="dash-section" style="padding-bottom:16px">
+      <div class="dash-label">Respaldo de datos</div>
+      <div style="display:flex;gap:8px">
+        <button class="btn-outline" style="flex:1;justify-content:center" onclick="exportarJSON()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Exportar JSON</button>
+        <button class="btn-outline" style="flex:1;justify-content:center" onclick="exportarExcel()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Exportar Excel</button>
+      </div>
+    </div>
+  </div>
+  <div class="view" id="view-campos">
+    <div class="view-header"><div class="view-title">Campos</div><button class="btn-primary" onclick="openFormCampo()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Nuevo</button></div>
+    <div class="search-wrap"><div class="search-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div><input class="search-box" id="campos-search" placeholder="Campo, exportadora, admin, zona, cultivo..." oninput="renderCampos()"><div class="search-hint">Busca por cualquier dato del campo</div></div>
+    <div class="card-list" id="campos-list"></div>
+  </div>
+  <div class="view" id="view-directorio">
+    <div class="view-header"><div class="view-title">Directorio</div><button class="btn-primary" onclick="openFormContacto()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Nuevo</button></div>
+    <div class="search-wrap"><div class="search-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div><input class="search-box" id="dir-search" placeholder="Nombre, empresa, rol..." oninput="renderDirectorio()"></div>
+    <div class="chip-row"><button class="chip active" onclick="setDirF('todos',this)">Todos</button><button class="chip" onclick="setDirF('campos',this)">Campos</button><button class="chip" onclick="setDirF('exportadoras',this)">Exportadoras</button><button class="chip" onclick="setDirF('administradores',this)">Administradores</button><button class="chip" onclick="setDirF('duenos',this)">Dueños</button><button class="chip" onclick="setDirF('asesores',this)">Asesores</button></div>
+    <div id="dir-list"></div>
+  </div>
+  <div class="view" id="view-pendientes">
+    <div class="view-header"><div class="view-title">Pendientes</div></div>
+    <div class="chip-row"><button class="chip active" onclick="setPendF('activos',this)">Activos</button><button class="chip" onclick="setPendF('enviados',this)">Enviados</button><button class="chip" onclick="setPendF('todos',this)">Todos</button></div>
+    <div style="padding:0 16px" id="pends-list"></div>
+  </div>
+</div>
+
+<!-- MODALES -->
+<div class="modal-overlay" id="modal-campo">
+  <div class="modal"><div class="modal-handle"></div>
+    <div class="modal-header"><div style="flex:1;padding-right:10px"><div class="modal-title" id="mc-nombre"></div><div style="font-size:12px;color:var(--text2);margin-top:2px" id="mc-sub"></div></div><button class="modal-close" onclick="closeModal('modal-campo')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+    <div class="modal-section"><div class="sec-title">Información</div><div id="mc-info"></div></div>
+    <div class="modal-section" id="mc-cultivos-sec"><div class="sec-title">Cultivos</div><div id="mc-cultivos"></div></div>
+    <div class="modal-section" id="mc-rs-sec"><div class="sec-title">Razones sociales</div><div id="mc-rs"></div></div>
+    <div class="modal-section" id="mc-contactos-sec"><div class="sec-title">Contactos</div><div id="mc-contactos"></div></div>
+    <div class="modal-section" id="mc-prep-sec"><div class="sec-title">Preparación próxima visita</div><div id="mc-prep"></div></div>
+    <div class="modal-section"><div class="sec-title">Historial de visitas</div><div id="mc-visitas"></div></div>
+    <div class="btn-row"><button class="btn-full" onclick="openFormVisita(currentCampoId)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Registrar visita</button><button class="btn-outline" id="mc-maps-btn" onclick="abrirMaps()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></button></div>
+    <div class="btn-row"><button class="btn-outline" style="flex:1;justify-content:center" onclick="openFormCampo(currentCampoId)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Editar campo</button><button class="btn-outline" style="flex:1;justify-content:center;color:var(--warn);border-color:#F5C6B3" onclick="confirmarEliminarCampo(currentCampoId)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>Eliminar</button></div>
+  </div>
+</div>
+<div class="modal-overlay" id="modal-contacto">
+  <div class="modal"><div class="modal-handle"></div>
+    <div class="modal-header"><div style="flex:1;padding-right:10px"><div class="modal-title" id="mct-nombre"></div><div style="font-size:12px;color:var(--text2);margin-top:2px" id="mct-sub"></div></div><button class="modal-close" onclick="closeModal('modal-contacto')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+    <div class="modal-section"><div id="mct-info"></div></div>
+    <div class="modal-section" id="mct-visitas-sec"><div class="sec-title">Historial de visitas</div><div id="mct-visitas"></div></div>
+    <div class="btn-row" id="mct-btn-row" style="display:none"><button class="btn-full" onclick="openFormVisita(currentCampoId)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Registrar visita</button></div>
+  </div>
+</div>
+<div class="modal-overlay" id="modal-minuta">
+  <div class="modal"><div class="modal-handle"></div>
+    <div class="modal-header"><div class="modal-title">Minuta de visita</div><button class="modal-close" onclick="closeModal('modal-minuta')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+    <div class="modal-section"><div class="minuta-box" id="minuta-text"></div><button class="btn-copy" onclick="copiarMinuta()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Copiar para WhatsApp / Email</button></div>
+  </div>
+</div>
+
+<!-- FORMS -->
+<div class="form-modal" id="form-visita">
+  <div class="form-inner"><div class="modal-handle"></div>
+    <div class="modal-header"><div class="modal-title">Nueva visita</div><button class="modal-close" onclick="closeModal('form-visita')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+    <div class="form-section">
+      <label class="form-label">Campo / Contacto</label><select class="form-input" id="fv-cliente" onchange="updateFVRs()"></select>
+      <label class="form-label">Razón social (opcional)</label><select class="form-input" id="fv-rs"><option value="">Sin especificar</option></select>
+      <label class="form-label">Fecha</label><input type="date" class="form-input" id="fv-fecha">
+      <label class="form-label">Preparación / notas previas</label><textarea class="form-textarea" id="fv-prep" placeholder="¿Qué querías plantear o preguntar?" style="min-height:55px"></textarea>
+      <label class="form-label">Resumen de la reunión</label><textarea class="form-textarea" id="fv-resumen" placeholder="¿Qué se habló? ¿Estado del campo?..."></textarea>
+      <label class="form-label">Próxima visita sugerida</label>
+      <div class="radio-row"><button class="radio-opt" onclick="selProx(this,'15')">15 días</button><button class="radio-opt sel" onclick="selProx(this,'30')">30 días</button><button class="radio-opt" onclick="selProx(this,'60')">60 días</button><button class="radio-opt" onclick="selProx(this,'90')">90 días</button><button class="radio-opt" onclick="selProx(this,'0')">Sin fecha</button></div>
+      <div class="form-divider">Pendientes — cosas que debes enviar</div>
+      <div class="pend-add-row"><input class="pend-input-form" id="pend-new-input" placeholder="Ej: Enviar cotización variedad X..." onkeydown="if(event.key==='Enter')addPF()"><button class="btn-add" onclick="addPF()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button></div>
+      <div class="pend-list-form" id="pend-form-list"></div>
+    </div>
+    <div class="form-actions"><button class="btn-cancel" onclick="closeModal('form-visita')">Cancelar</button><button class="btn-save" onclick="saveVisita()">Guardar visita</button></div>
+  </div>
+</div>
+<div class="form-modal" id="form-campo">
+  <div class="form-inner"><div class="modal-handle"></div>
+    <div class="modal-header"><div class="modal-title">Nuevo campo</div><button class="modal-close" onclick="closeModal('form-campo')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+    <div class="form-section">
+      <label class="form-label">Tipo</label><select class="form-input" id="fc-tipo" onchange="toggleFCTipo()"><option value="independiente">Campo independiente</option><option value="exportadora">Bajo exportadora</option></select>
+      <div id="fc-exp-row" style="display:none"><label class="form-label">Exportadora</label><input type="text" class="form-input" id="fc-exportadora" placeholder="Nombre de la exportadora"></div>
+      <label class="form-label">Nombre del campo</label><input type="text" class="form-input" id="fc-nombre" placeholder="Ej: Campo El Roble">
+      <label class="form-label">Zona / Región</label><input type="text" class="form-input" id="fc-zona" placeholder="Ej: Valle del Maipo...">
+      <label class="form-label">Superficie total (há)</label><input type="number" class="form-input" id="fc-sup" placeholder="Ej: 150">
+      <label class="form-label">Notas generales</label><textarea class="form-textarea" id="fc-notas" placeholder="Observaciones..."></textarea>
+      <label class="form-label">Ubicación GPS / Link Maps</label>
+      <button class="btn-gps" onclick="capturarGPS()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"/><path d="M19.94 11a8 8 0 1 0 .06 1M12 2v2M12 20v2M2 12h2M20 12h2"/></svg>Capturar mi ubicación actual</button>
+      <input type="text" class="form-input" id="fc-gps" placeholder="O pega un link de Google Maps...">
+      <div class="form-divider">Cultivos</div>
+      <div class="add-row"><input class="add-input" id="fc-cultivo-nom" placeholder="Cultivo (ej: Cerezas)"><input class="add-input" id="fc-cultivo-sup" placeholder="Há" style="max-width:70px"><button class="btn-add" onclick="addCultivo()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button></div>
+      <div class="tag-list" id="fc-cultivos-list"></div>
+      <div class="form-divider">Razones sociales</div>
+      <div class="add-row"><input class="add-input" id="fc-rs-nom" placeholder="Razón social"><input class="add-input" id="fc-rs-rut" placeholder="RUT" style="max-width:110px"><button class="btn-add" onclick="addRS()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button></div>
+      <div class="tag-list" id="fc-rs-list"></div>
+      <div class="form-divider">Contactos del campo</div>
+      <div class="add-row"><input class="add-input" id="fc-cont-nom" placeholder="Nombre"><select class="add-input" id="fc-cont-rol" style="max-width:110px"><option value="Administrador">Admin</option><option value="Dueño">Dueño</option><option value="Asesor">Asesor</option><option value="Otro">Otro</option></select><button class="btn-add" onclick="addContactoCampo()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button></div>
+      <div class="tag-list" id="fc-contactos-list"></div>
+    </div>
+    <div class="form-actions"><button class="btn-cancel" onclick="closeModal('form-campo')">Cancelar</button><button class="btn-save" onclick="saveCampo()">Guardar campo</button></div>
+  </div>
+</div>
+<div class="form-modal" id="form-contacto">
+  <div class="form-inner"><div class="modal-handle"></div>
+    <div class="modal-header"><div class="modal-title">Nuevo contacto</div><button class="modal-close" onclick="closeModal('form-contacto')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+    <div class="form-section">
+      <label class="form-label">Tipo</label><select class="form-input" id="fct-tipo"><option value="Administrador">Administrador</option><option value="Dueño">Dueño</option><option value="Asesor (cliente)">Asesor (lo visito como cliente)</option><option value="Asesor (apoyo)">Asesor (contacto de apoyo)</option><option value="Exportadora">Exportadora</option></select>
+      <label class="form-label">Nombre</label><input type="text" class="form-input" id="fct-nombre" placeholder="Nombre completo o razón social">
+      <label class="form-label">Empresa / Campo asociado</label><input type="text" class="form-input" id="fct-empresa" placeholder="Ej: Exportadora Los Andes...">
+      <label class="form-label">Teléfono</label><input type="tel" class="form-input" id="fct-tel" placeholder="+56 9 ...">
+      <label class="form-label">Email</label><input type="email" class="form-input" id="fct-email" placeholder="correo@ejemplo.com">
+      <label class="form-label">Notas</label><textarea class="form-textarea" id="fct-notas" placeholder="Especialidad, observaciones..."></textarea>
+    </div>
+    <div class="form-actions"><button class="btn-cancel" onclick="closeModal('form-contacto')">Cancelar</button><button class="btn-save" onclick="saveContacto()">Guardar</button></div>
+  </div>
+</div>
+
+<script>
+// ─── CONFIG ───────────────────────────────────────────────
+const CLIENT_ID = '382154755475-6gtp8p6q7353b5a5sft1tsgpvfcvagdd.apps.googleusercontent.com';
+const SCOPES = 'https://www.googleapis.com/auth/drive.file';
+const REDIRECT_URI = 'https://apkagro.github.io/apk-agro/apk-agro.html';
+const FILE_NAME = 'apk-agro-data.json';
+
+// ─── STATE ────────────────────────────────────────────────
+let db = {campos:[],visitas:[],pendientes:[],contactos:[]};
+let accessToken = null;
+let driveFileId = null;
+let currentCampoId = null;
+let pendFormList = [];
+let proxDias = 30;
+let pendFiltro = 'activos';
+let dirFiltro = 'todos';
+let fcCultivos=[], fcRS=[], fcContactos=[];
+let currentMapsUrl = '';
+let syncTimeout = null;
+
+// ─── AUTH con redirect ────────────────────────────────────
+function buildAuthUrl() {
+  const params = new URLSearchParams({
+    client_id: CLIENT_ID,
+    redirect_uri: REDIRECT_URI,
+    response_type: 'token',
+    scope: SCOPES,
+    include_granted_scopes: 'true',
+    prompt: 'select_account'
+  });
+  return 'https://accounts.google.com/o/oauth2/v2/auth?' + params.toString();
+}
+
+function checkTokenFromUrl() {
+  const hash = window.location.hash;
+  if (hash && hash.includes('access_token')) {
+    const params = new URLSearchParams(hash.substring(1));
+    const token = params.get('access_token');
+    if (token) {
+      accessToken = token;
+      localStorage.setItem('apkagro_token', token);
+      // Limpiar hash de la URL
+      history.replaceState(null, null, window.location.pathname);
+      return true;
+    }
+  }
+  return false;
+}
+
+// ─── DRIVE SYNC ───────────────────────────────────────────
+function showSyncStatus(msg, isError=false) {
+  const el = document.getElementById('sync-status');
+  el.textContent = msg;
+  el.className = 'sync-status show' + (isError?' error':'');
+  setTimeout(()=>el.className='sync-status', 3000);
+}
+
+async function buscarArchivoDrive() {
+  const r = await fetch(
+    `https://www.googleapis.com/drive/v3/files?q=name='${FILE_NAME}' and trashed=false&spaces=drive&fields=files(id,name)`,
+    {headers:{Authorization:`Bearer ${accessToken}`}}
+  );
+  const data = await r.json();
+  if(data.error && data.error.code===401){accessToken=null;localStorage.removeItem('apkagro_token');location.reload();return null;}
+  return data.files&&data.files.length>0?data.files[0].id:null;
+}
+
+async function cargarDesdeDrive() {
+  if(!accessToken) return;
+  showSyncStatus('Sincronizando con Drive...');
+  document.getElementById('btn-sync').classList.add('syncing');
+  try {
+    driveFileId = await buscarArchivoDrive();
+    if(!driveFileId){cargarDemo();await guardarEnDrive();showSyncStatus('✓ Datos iniciales creados en Drive');}
+    else {
+      const r = await fetch(`https://www.googleapis.com/drive/v3/files/${driveFileId}?alt=media`,{headers:{Authorization:`Bearer ${accessToken}`}});
+      const data = await r.json();
+      if(data.campos) db=data;
+      showSyncStatus('✓ Sincronizado con Drive');
+    }
+  } catch(e) {
+    const local=localStorage.getItem('apkagro_v3');
+    if(local)db=JSON.parse(local);else cargarDemo();
+    showSyncStatus('Sin conexión — datos locales',true);
+  }
+  document.getElementById('btn-sync').classList.remove('syncing');
+  renderDashboard();
+}
+
+async function guardarEnDrive() {
+  guardarLocal();
+  if(!accessToken)return;
+  const content=JSON.stringify(db);
+  try {
+    if(driveFileId){
+      await fetch(`https://www.googleapis.com/upload/drive/v3/files/${driveFileId}?uploadType=media`,{method:'PATCH',headers:{Authorization:`Bearer ${accessToken}`,'Content-Type':'application/json'},body:content});
+    } else {
+      const form=new FormData();
+      form.append('metadata',new Blob([JSON.stringify({name:FILE_NAME,mimeType:'application/json'})],{type:'application/json'}));
+      form.append('file',new Blob([content],{type:'application/json'}));
+      const r=await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart',{method:'POST',headers:{Authorization:`Bearer ${accessToken}`},body:form});
+      const data=await r.json();
+      driveFileId=data.id;
+    }
+  } catch(e){}
+}
+
+async function syncDrive(){document.getElementById('btn-sync').classList.add('syncing');await cargarDesdeDrive();document.getElementById('btn-sync').classList.remove('syncing');}
+function guardarLocal(){try{localStorage.setItem('apkagro_v3',JSON.stringify(db));}catch(e){}}
+function saveDB(){guardarLocal();clearTimeout(syncTimeout);syncTimeout=setTimeout(()=>guardarEnDrive(),1500);}
+
+// ─── DEMO DATA ────────────────────────────────────────────
+function cargarDemo(){
+  db = {
+    campos: [{"id": "c1", "tipo": "independiente", "exportadora": "", "nombre": "AGRIC. AGROSOL LTDA.", "zona": "PAINE", "superficie": "92.8", "gps": "", "notas": "", "cultivos": [{"nom": "ALMENDRO", "sup": 31.2}, {"nom": "NOGAL", "sup": 61.6}], "razonSocial": [{"nom": "AGRIC. AGROSOL LTDA.", "rut": "79751320-2"}], "contactos": []}, {"id": "c2", "tipo": "independiente", "exportadora": "", "nombre": "AGRIC. ALBORADA LTDA.", "zona": "CALERA DE TANGO", "superficie": "53.12", "gps": "", "notas": "", "cultivos": [{"nom": "PERA ASIATICA", "sup": 4.22}, {"nom": "PERAL", "sup": 48.9}], "razonSocial": [{"nom": "AGRIC. ALBORADA LTDA.", "rut": "99507910-0"}], "contactos": []}, {"id": "c3", "tipo": "independiente", "exportadora": "", "nombre": "AGRIC. ASUNCION LTDA.", "zona": "PAINE", "superficie": "52.73", "gps": "", "notas": "", "cultivos": [{"nom": "CIRUELO EUROPEO", "sup": 2.57}, {"nom": "CIRUELO JAPONES", "sup": 12.22}, {"nom": "DURAZNERO CONSUMO FRESCO", "sup": 4.24}, {"nom": "NOGAL", "sup": 33.7}], "razonSocial": [{"nom": "AGRIC. ASUNCION LTDA.", "rut": "76217058-2"}], "contactos": []}, {"id": "c4", "tipo": "independiente", "exportadora": "", "nombre": "AGRIC. CARLOS VIAL LTDA.", "zona": "PIRQUE", "superficie": "60.0", "gps": "", "notas": "", "cultivos": [{"nom": "NOGAL", "sup": 60.0}], "razonSocial": [{"nom": "SOC AGRIC CARLOS VIAL E HIJOS Y CIA LTDA", "rut": "84.616.500-2"}], "contactos": [{"nom": "Francisco García Huidobro", "rol": "Asesor"}]}, {"id": "c5", "tipo": "independiente", "exportadora": "", "nombre": "AGRIC. CHACABUCO QUALITY GRAPES S.A.", "zona": "COLINA", "superficie": "90.0", "gps": "", "notas": "", "cultivos": [{"nom": "VID DE MESA", "sup": 90.0}], "razonSocial": [{"nom": "AGRIC. CHACABUCO QUALITY GRAPES S.A.", "rut": "76633540-3"}], "contactos": [{"nom": "Carlos Madrid", "rol": "Asesor"}]}, {"id": "c6", "tipo": "independiente", "exportadora": "", "nombre": "AGRIC. CHOROMBO S.A.", "zona": "SAN BERNARDO", "superficie": "68.98", "gps": "", "notas": "", "cultivos": [{"nom": "NOGAL", "sup": 68.98}], "razonSocial": [{"nom": "AGRIC. CHOROMBO S.A.", "rut": "83659400-2"}], "contactos": []}, {"id": "c7", "tipo": "independiente", "exportadora": "", "nombre": "AGRIC. COIGUE GRANDE LTDA.", "zona": "LAMPA", "superficie": "8.0", "gps": "", "notas": "", "cultivos": [{"nom": "CEREZO", "sup": 8.0}], "razonSocial": [{"nom": "AGRIC. COIGUE GRANDE LTDA.", "rut": "76794130-7"}], "contactos": [{"nom": "Juan Carlos Merlo", "rol": "Asesor"}]}, {"id": "c8", "tipo": "independiente", "exportadora": "", "nombre": "AGRIC. DON JOCHEN S.A.", "zona": "PIRQUE", "superficie": "64.42", "gps": "", "notas": "", "cultivos": [{"nom": "NOGAL", "sup": 64.42}], "razonSocial": [{"nom": "AGRIC. DON JOCHEN S.A.", "rut": "76021028-5"}], "contactos": []}, {"id": "c9", "tipo": "independiente", "exportadora": "", "nombre": "AGRIC. EL CRUCE LTDA.", "zona": "BUIN", "superficie": "56.86", "gps": "", "notas": "", "cultivos": [{"nom": "MANDARINO", "sup": 26.18}, {"nom": "NARANJO", "sup": 30.68}], "razonSocial": [{"nom": "AGRIC. EL CRUCE LTDA.", "rut": "77239830-2"}], "contactos": []}, {"id": "c10", "tipo": "independiente", "exportadora": "", "nombre": "AGRIC. EL RACO LTDA.", "zona": "PIRQUE", "superficie": "167.15", "gps": "", "notas": "", "cultivos": [{"nom": "NOGAL", "sup": 107.15}, {"nom": "VID VINIFERA", "sup": 60.0}], "razonSocial": [{"nom": "AGRIC. EL RACO LTDA.", "rut": "77827010-2"}], "contactos": []}, {"id": "c11", "tipo": "independiente", "exportadora": "", "nombre": "AGRIC. EL RESGUARDO S.A.", "zona": "PAINE", "superficie": "65.0", "gps": "", "notas": "", "cultivos": [{"nom": "CEREZO", "sup": 30.0}, {"nom": "CIRUELO EUROPEO", "sup": 13.0}, {"nom": "NECTARINO", "sup": 22.0}], "razonSocial": [{"nom": "AGRIC. EL RESGUARDO S.A.", "rut": "99547600-2"}], "contactos": [{"nom": "Walter Masmann", "rol": "Asesor"}]}, {"id": "c12", "tipo": "independiente", "exportadora": "", "nombre": "AGRIC. LA BATALLA LTDA.", "zona": "COLINA", "superficie": "33.0", "gps": "", "notas": "", "cultivos": [{"nom": "CEREZO", "sup": 13.0}, {"nom": "NOGAL", "sup": 20.0}], "razonSocial": [{"nom": "AGRIC. LA BATALLA LTDA.", "rut": "76472120-9"}], "contactos": []}, {"id": "c13", "tipo": "independiente", "exportadora": "", "nombre": "AGRIC. LAS GOLONDRINAS DE SANTA ANA S.A.", "zona": "TALAGANTE", "superficie": "46.23", "gps": "", "notas": "", "cultivos": [{"nom": "CEREZO", "sup": 25.28}, {"nom": "CIRUELO JAPONES", "sup": 16.75}, {"nom": "VID DE MESA", "sup": 4.2}], "razonSocial": [{"nom": "AGRIC. LAS GOLONDRINAS DE SANTA ANA S.A.", "rut": "79771670-7"}], "contactos": []}, {"id": "c14", "tipo": "independiente", "exportadora": "", "nombre": "AGRIC. LAS RIENDAS LTDA.", "zona": "PENAFLOR", "superficie": "72.2", "gps": "", "notas": "", "cultivos": [{"nom": "NOGAL", "sup": 72.2}], "razonSocial": [{"nom": "AGRIC. LAS RIENDAS LTDA.", "rut": "76216925-8"}], "contactos": []}, {"id": "c15", "tipo": "independiente", "exportadora": "", "nombre": "AGRIC. LITA LTDA.", "zona": "BUIN", "superficie": "49.0", "gps": "", "notas": "", "cultivos": [{"nom": "NOGAL", "sup": 49.0}], "razonSocial": [{"nom": "AGRIC. LITA LTDA.", "rut": "76392440-8"}], "contactos": []}, {"id": "c16", "tipo": "independiente", "exportadora": "", "nombre": "AGRIC. LOS ALFALFALES S.A.", "zona": "SAN BERNARDO", "superficie": "150.0", "gps": "", "notas": "", "cultivos": [{"nom": "DURAZNERO TIPO CONSERVERO", "sup": 30.0}, {"nom": "NOGAL", "sup": 120.0}], "razonSocial": [{"nom": "LOS ALFALFALES S.A AGRICOLA", "rut": "96642720-5"}], "contactos": [{"nom": "Francisco Gonzalez", "rol": "Asesor"}]}, {"id": "c17", "tipo": "exportadora", "exportadora": "GESEX", "nombre": "AGRIC. SAN CARLOS LTDA.", "zona": "CALERA DE TANGO", "superficie": "230.77", "gps": "", "notas": "", "cultivos": [{"nom": "ALMENDRO", "sup": 50.0}, {"nom": "DURAZNERO CONSUMO FRESCO", "sup": 15.6}, {"nom": "MANDARINO", "sup": 18.6}, {"nom": "NOGAL", "sup": 94.57}, {"nom": "VID VINIFERA", "sup": 52.0}], "razonSocial": [{"nom": "AGRIC. SAN CARLOS LTDA.", "rut": "78025810-1"}], "contactos": [{"nom": "Gonzalo Pedreros", "rol": "Asesor"}]}, {"id": "c18", "tipo": "independiente", "exportadora": "", "nombre": "AGRIC. SAN LORENZO S.A.", "zona": "BUIN", "superficie": "52.13", "gps": "", "notas": "", "cultivos": [{"nom": "NOGAL", "sup": 52.13}], "razonSocial": [{"nom": "AGRIC. SAN LORENZO S.A.", "rut": "76081566-7"}], "contactos": [{"nom": "Francisco Amar", "rol": "Asesor"}]}, {"id": "c19", "tipo": "independiente", "exportadora": "", "nombre": "AGRIC. SANTA NADIA Y CIA. LTDA.", "zona": "CALERA DE TANGO", "superficie": "59.55", "gps": "", "notas": "", "cultivos": [{"nom": "NOGAL", "sup": 59.55}], "razonSocial": [{"nom": "AGRIC. SANTA NADIA Y CIA. LTDA.", "rut": "78168240-3"}], "contactos": []}, {"id": "c20", "tipo": "independiente", "exportadora": "", "nombre": "AGRIC. SANTA SARA LTDA.", "zona": "PIRQUE", "superficie": "47.68", "gps": "", "notas": "", "cultivos": [{"nom": "NOGAL", "sup": 47.68}], "razonSocial": [{"nom": "AGRIC. SANTA SARA LTDA.", "rut": "76081149-1"}], "contactos": [{"nom": "Miguel Carus", "rol": "Asesor"}]}, {"id": "c21", "tipo": "independiente", "exportadora": "", "nombre": "AGRIC. STA. CARMEN LTDA.", "zona": "COLINA", "superficie": "50.58", "gps": "", "notas": "", "cultivos": [{"nom": "NOGAL", "sup": 22.6}, {"nom": "VID DE MESA", "sup": 27.98}], "razonSocial": [{"nom": "AGRIC. STA. CARMEN LTDA.", "rut": "79747850-4"}], "contactos": []}, {"id": "c22", "tipo": "independiente", "exportadora": "", "nombre": "AGRIC. STA. CECILIA LTDA.", "zona": "PAINE", "superficie": "28.69", "gps": "", "notas": "", "cultivos": [{"nom": "CEREZO", "sup": 28.69}], "razonSocial": [{"nom": "AGRIC. STA. CECILIA LTDA.", "rut": "76123581-8"}], "contactos": []}, {"id": "c23", "tipo": "independiente", "exportadora": "", "nombre": "AGRIC. STA. MARTA DE LIRAY S.A.", "zona": "COLINA", "superficie": "40.0", "gps": "", "notas": "", "cultivos": [{"nom": "VID DE MESA", "sup": 40.0}], "razonSocial": [{"nom": "AGRIC. STA. MARTA DE LIRAY S.A.", "rut": "76489668-8"}], "contactos": []}, {"id": "c24", "tipo": "independiente", "exportadora": "", "nombre": "AGRIC. Y EXPORT. VIENTO SUR LT", "zona": "COLINA", "superficie": "46.5", "gps": "", "notas": "", "cultivos": [{"nom": "CEREZO", "sup": 25.0}, {"nom": "CIRUELO EUROPEO", "sup": 8.5}, {"nom": "NOGAL", "sup": 13.0}], "razonSocial": [{"nom": "AGRIC. Y EXPORT. VIENTO SUR LT", "rut": "77049192-4"}], "contactos": []}, {"id": "c25", "tipo": "independiente", "exportadora": "", "nombre": "AGRIC. Y GANADERA LA PAZ LTDA.", "zona": "PIRQUE", "superficie": "73.62", "gps": "", "notas": "", "cultivos": [{"nom": "NOGAL", "sup": 73.62}], "razonSocial": [{"nom": "AGRIC. Y GANADERA LA PAZ LTDA.", "rut": "76131854-3"}], "contactos": []}, {"id": "c26", "tipo": "independiente", "exportadora": "", "nombre": "AGRICOLA LAS MELLIZAS LTDA.", "zona": "PAINE", "superficie": "60.0", "gps": "", "notas": "", "cultivos": [{"nom": "ALMENDRO", "sup": 60.0}], "razonSocial": [{"nom": "AGRICOLA LAS MELLIZAS LTDA.", "rut": "78.061.280-0"}], "contactos": []}, {"id": "c27", "tipo": "independiente", "exportadora": "", "nombre": "AGRICOLA MARZEM LTDA", "zona": "PAINE", "superficie": "139.0", "gps": "", "notas": "", "cultivos": [{"nom": "CEREZO", "sup": 3.0}, {"nom": "NOGAL", "sup": 136.0}], "razonSocial": [{"nom": "AGRICOLA MARZEM LTDA", "rut": "76.665.120-8"}], "contactos": [{"nom": "Miguel Carus", "rol": "Asesor"}]}, {"id": "c28", "tipo": "independiente", "exportadora": "", "nombre": "AGRICOVIAL S.A.", "zona": "SAN BERNARDO", "superficie": "80.32", "gps": "", "notas": "", "cultivos": [{"nom": "CIRUELO EUROPEO", "sup": 28.5}, {"nom": "NOGAL", "sup": 51.82}], "razonSocial": [{"nom": "AGRICOVIAL S.A.", "rut": "96993240-7"}], "contactos": []}, {"id": "c29", "tipo": "exportadora", "exportadora": "Agua Santa", "nombre": "AGUA SANTA", "zona": "BUIN", "superficie": "101.0", "gps": "", "notas": "", "cultivos": [{"nom": "DURAZNERO CONSUMO FRESCO", "sup": 8.0}, {"nom": "VID DE MESA", "sup": 23.0}, {"nom": "CEREZO", "sup": 70.0}], "razonSocial": [{"nom": "AGRIC. EL CARMELO LTDA.", "rut": "76625213-3"}], "contactos": [{"nom": "Walter Masmann", "rol": "Asesor"}]}, {"id": "c30", "tipo": "independiente", "exportadora": "", "nombre": "AGRICOLA FUNDO ESPERANZA LTDA.", "zona": "COLINA", "superficie": "137.0", "gps": "", "notas": "Holding: AGUAS BLANCAS", "cultivos": [{"nom": "NOGAL", "sup": 137.0}], "razonSocial": [{"nom": "AGRICOLA FUNDO ESPERANZA LTDA.", "rut": "76073381-4"}], "contactos": []}, {"id": "c31", "tipo": "independiente", "exportadora": "", "nombre": "FRUTERA AGUAS BLANCAS LTDA.", "zona": "COLINA", "superficie": "75.0", "gps": "", "notas": "Holding: AGUAS BLANCAS", "cultivos": [{"nom": "VID DE MESA", "sup": 75.0}], "razonSocial": [{"nom": "FRUTERA AGUAS BLANCAS LTDA.", "rut": "79660760-2"}], "contactos": []}, {"id": "c32", "tipo": "independiente", "exportadora": "", "nombre": "ALESSANDRINI", "zona": "TILTIL", "superficie": "70.0", "gps": "", "notas": "", "cultivos": [{"nom": "VID DE MESA", "sup": 70.0}], "razonSocial": [{"nom": "SUC. AGRIC. LUIS ALESSANDRINI GREZ LTDA.", "rut": "76182050-8"}], "contactos": [{"nom": "Dragomir Ljubetic", "rol": "Asesor"}]}, {"id": "c33", "tipo": "independiente", "exportadora": "", "nombre": "ARIZTIA MATTE JUAN GUILLERMO", "zona": "BUIN", "superficie": "56.16", "gps": "", "notas": "", "cultivos": [{"nom": "NOGAL", "sup": 56.16}], "razonSocial": [{"nom": "ARIZTIA MATTE JUAN GUILLERMO", "rut": "4592199-9"}], "contactos": []}, {"id": "c34", "tipo": "independiente", "exportadora": "", "nombre": "AVENTURA CHERRIES AND GRAPES S.A.", "zona": "SAN BERNARDO", "superficie": "51.53", "gps": "", "notas": "", "cultivos": [{"nom": "CEREZO", "sup": 37.08}, {"nom": "NOGAL", "sup": 14.45}], "razonSocial": [{"nom": "AVENTURA CHERRIES AND GRAPES S.A.", "rut": "76425310-8"}], "contactos": []}, {"id": "c35", "tipo": "independiente", "exportadora": "", "nombre": "BAJOS DE MATTE", "zona": "BUIN", "superficie": "80.0", "gps": "", "notas": "", "cultivos": [{"nom": "CEREZO", "sup": 70.0}, {"nom": "VID DE MESA", "sup": 10.0}], "razonSocial": [{"nom": "BAJOS DE MATTE S.A.", "rut": "96750670-2"}], "contactos": [{"nom": "Carlos Tapia", "rol": "Asesor"}]}, {"id": "c36", "tipo": "independiente", "exportadora": "", "nombre": "AGRICOLA FDO STA EUGENIA", "zona": "COLINA", "superficie": "50.0", "gps": "", "notas": "Holding: CARLOS TAGLE MOLINARES", "cultivos": [{"nom": "CEREZO", "sup": 40.0}, {"nom": "CIRUELO EUROPEO", "sup": 10.0}], "razonSocial": [{"nom": "AGRICOLA FDO STA EUGENIA", "rut": "77180787-9"}], "contactos": [{"nom": "Carlos Tapia", "rol": "Asesor"}]}, {"id": "c37", "tipo": "independiente", "exportadora": "", "nombre": "TAGLE MOLINARES CARLOS", "zona": "PAINE", "superficie": "38.95", "gps": "", "notas": "Holding: CARLOS TAGLE MOLINARES", "cultivos": [{"nom": "CEREZO", "sup": 23.55}, {"nom": "CIRUELO EUROPEO", "sup": 11.0}, {"nom": "MANZANO ROJO", "sup": 4.4}], "razonSocial": [{"nom": "TAGLE MOLINARES CARLOS", "rut": "10573527-8"}], "contactos": [{"nom": "Carlos Tapia", "rol": "Asesor"}]}, {"id": "c38", "tipo": "independiente", "exportadora": "", "nombre": "TAGLE SPA", "zona": "COLINA", "superficie": "144.0", "gps": "", "notas": "Holding: CARLOS TAGLE MOLINARES", "cultivos": [{"nom": "CEREZO", "sup": 144.0}], "razonSocial": [{"nom": "TAGLE SPA", "rut": "77487202-7"}], "contactos": [{"nom": "Carlos Tapia", "rol": "Asesor"}]}, {"id": "c39", "tipo": "independiente", "exportadora": "", "nombre": "CELCI", "zona": "ISLA DE MAIPO", "superficie": "161.0", "gps": "", "notas": "", "cultivos": [{"nom": "CEREZO", "sup": 6.0}, {"nom": "DURAZNERO TIPO CONSERVERO", "sup": 10.0}, {"nom": "LIMONERO", "sup": 40.0}, {"nom": "NOGAL", "sup": 105.0}], "razonSocial": [{"nom": "JOSE CELSI CIA. LTDA.", "rut": "84300800-3"}], "contactos": [{"nom": "Jose Manuel Astorga", "rol": "Asesor"}]}, {"id": "c40", "tipo": "independiente", "exportadora": "", "nombre": "COPEQUEN", "zona": "PAINE", "superficie": "32.3", "gps": "", "notas": "", "cultivos": [{"nom": "CEREZO", "sup": 32.3}], "razonSocial": [{"nom": "SOC. AGRIC. COPEQUEN LTDA.", "rut": "78029950-9"}], "contactos": [{"nom": "Rodrigo Valdivia", "rol": "Asesor"}]}, {"id": "c41", "tipo": "independiente", "exportadora": "", "nombre": "CV TRADING", "zona": "PAINE", "superficie": "82.0", "gps": "", "notas": "", "cultivos": [{"nom": "CIRUELO EUROPEO", "sup": 17.0}, {"nom": "CIRUELO JAPONES", "sup": 2.0}, {"nom": "NOGAL", "sup": 63.0}], "razonSocial": [{"nom": "CV TRADING", "rut": "78254990-1"}], "contactos": [{"nom": "Francisco García Huidobro", "rol": "Asesor"}]}, {"id": "c42", "tipo": "independiente", "exportadora": "", "nombre": "DOMINGO GODOY", "zona": "PAINE", "superficie": "72.0", "gps": "", "notas": "", "cultivos": [{"nom": "CIRUELO JAPONES", "sup": 72.0}], "razonSocial": [{"nom": "AGRICOLA DOÑA HILDA", "rut": "77642840-K"}], "contactos": []}, {"id": "c43", "tipo": "independiente", "exportadora": "", "nombre": "DOMINGO ROMERO CORTÉS", "zona": "TALAGANTE", "superficie": "105.55", "gps": "", "notas": "", "cultivos": [{"nom": "CEREZO", "sup": 15.55}, {"nom": "NOGAL", "sup": 90.0}], "razonSocial": [{"nom": "ROMERO CORTES DOMINGO", "rut": "3400258-4"}], "contactos": [{"nom": "Gonzalo Jerez", "rol": "Asesor"}]}, {"id": "c44", "tipo": "exportadora", "exportadora": "Frussan", "nombre": "EL MAITEN", "zona": "LAMPA", "superficie": "148.86", "gps": "", "notas": "", "cultivos": [{"nom": "NOGAL", "sup": 99.03}, {"nom": "VID DE MESA", "sup": 49.83}], "razonSocial": [{"nom": "SOC. AGRIC. LOS MAITENES DE LIPANGUE LTDA.", "rut": "84343900-4"}], "contactos": [{"nom": "Francisco García Huidobro", "rol": "Asesor"}]}, {"id": "c45", "tipo": "independiente", "exportadora": "", "nombre": "EL ROSARIO", "zona": "TILTIL", "superficie": "51.09", "gps": "", "notas": "", "cultivos": [{"nom": "NOGAL", "sup": 51.09}], "razonSocial": [{"nom": "SOC. AGRIC. EL ROSARIO LTDA.", "rut": "79602460-7"}], "contactos": []}, {"id": "c46", "tipo": "independiente", "exportadora": "", "nombre": "ENGLANDER PLAZA INGRID", "zona": "SAN BERNARDO", "superficie": "16.51", "gps": "", "notas": "Holding: ENGLANDER", "cultivos": [{"nom": "NOGAL", "sup": 16.51}], "razonSocial": [{"nom": "ENGLANDER PLAZA INGRID", "rut": "9989697-3"}], "contactos": []}, {"id": "c47", "tipo": "independiente", "exportadora": "", "nombre": "SUC. ENGANDLER PLAZA", "zona": "SAN BERNARDO", "superficie": "77.35", "gps": "", "notas": "Holding: ENGLANDER", "cultivos": [{"nom": "NOGAL", "sup": 77.35}], "razonSocial": [{"nom": "SUC. ENGANDLER PLAZA", "rut": "10705582-7"}], "contactos": []}, {"id": "c48", "tipo": "independiente", "exportadora": "", "nombre": "FOMAGRI", "zona": "TALAGANTE", "superficie": "148.0", "gps": "", "notas": "", "cultivos": [{"nom": "CEREZO", "sup": 57.0}, {"nom": "CIRUELO JAPONES", "sup": 9.0}, {"nom": "DURAZNERO CONSUMO FRESCO", "sup": 19.0}, {"nom": "NECTARINO", "sup": 33.0}, {"nom": "VID DE MESA", "sup": 30.0}], "razonSocial": [{"nom": "FOMAGRI S.A.", "rut": "79650870-1"}], "contactos": [{"nom": "Jose Manuel Astorga", "rol": "Asesor"}]}, {"id": "c49", "tipo": "independiente", "exportadora": "", "nombre": "FRUTERA LINDEROS LTDA.", "zona": "BUIN", "superficie": "89.0", "gps": "", "notas": "", "cultivos": [{"nom": "VID DE MESA", "sup": 89.0}], "razonSocial": [{"nom": "FRUTERA LINDEROS LTDA.", "rut": "88043200-1"}], "contactos": [{"nom": "Luis Sazo", "rol": "Asesor"}]}, {"id": "c50", "tipo": "independiente", "exportadora": "", "nombre": "AGRIC. ALCALDE LTDA.", "zona": "BUIN", "superficie": "51.36", "gps": "", "notas": "Holding: FRUTEXSA", "cultivos": [{"nom": "VID DE MESA", "sup": 51.36}], "razonSocial": [{"nom": "AGRIC. ALCALDE LTDA.", "rut": "99507910-0"}], "contactos": []}, {"id": "c51", "tipo": "independiente", "exportadora": "", "nombre": "AGRIC. VALENCIA LTDA.", "zona": "PAINE", "superficie": "5.9", "gps": "", "notas": "Holding: FRUTEXSA", "cultivos": [{"nom": "VID DE MESA", "sup": 5.9}], "razonSocial": [{"nom": "AGRIC. VALENCIA LTDA.", "rut": "79567390-3"}], "contactos": []}, {"id": "c52", "tipo": "independiente", "exportadora": "", "nombre": "AGRICOLA VALENCIA LTDA.", "zona": "PAINE", "superficie": "7.0", "gps": "", "notas": "Holding: FRUTEXSA", "cultivos": [{"nom": "VID DE MESA", "sup": 7.0}], "razonSocial": [{"nom": "AGRICOLA VALENCIA LTDA.", "rut": "76510235-9"}], "contactos": []}, {"id": "c53", "tipo": "independiente", "exportadora": "", "nombre": "FRUTIC. EL ALBA S.P.A.", "zona": "BUIN", "superficie": "58.15", "gps": "", "notas": "", "cultivos": [{"nom": "CEREZO", "sup": 8.15}, {"nom": "CIRUELO JAPONES", "sup": 4.0}, {"nom": "DURAZNERO CONSUMO FRESCO", "sup": 2.0}, {"nom": "MANZANO ROJO", "sup": 8.0}, {"nom": "NECTARINO", "sup": 24.0}, {"nom": "VID DE MESA", "sup": 12.0}], "razonSocial": [{"nom": "FRUTIC. EL ALBA S.P.A.", "rut": "76351975-9"}], "contactos": []}, {"id": "c54", "tipo": "independiente", "exportadora": "", "nombre": "GARCES", "zona": "COLINA", "superficie": "55.0", "gps": "", "notas": "", "cultivos": [{"nom": "CEREZO", "sup": 55.0}], "razonSocial": [{"nom": "AGRICOLA GARCES LIMITADA", "rut": "76109794-6"}], "contactos": []}, {"id": "c55", "tipo": "independiente", "exportadora": "", "nombre": "GENOVA SOC. AGRIC. LTDA.", "zona": "CALERA DE TANGO", "superficie": "57.43", "gps": "", "notas": "", "cultivos": [{"nom": "PERAL", "sup": 57.43}], "razonSocial": [{"nom": "GENOVA SOC. AGRIC. LTDA.", "rut": "79569810-8"}], "contactos": []}, {"id": "c56", "tipo": "independiente", "exportadora": "", "nombre": "COMUNIDAD AGRICOLA SAN PEDRO", "zona": "CALERA DE TANGO", "superficie": "30.0", "gps": "", "notas": "Holding: GESEX", "cultivos": [{"nom": "VID DE MESA", "sup": 30.0}], "razonSocial": [{"nom": "COMUNIDAD AGRICOLA SAN PEDRO", "rut": "53152990-1"}], "contactos": [{"nom": "Rodrigo Sapiain", "rol": "Asesor"}]}, {"id": "c57", "tipo": "exportadora", "exportadora": "Gesex", "nombre": "SOC. AGRIC. EL TOQUI LTDA.", "zona": "PAINE", "superficie": "33.0", "gps": "", "notas": "Holding: GESEX", "cultivos": [{"nom": "CEREZO", "sup": 33.0}], "razonSocial": [{"nom": "SOC. AGRIC. EL TOQUI LTDA.", "rut": "78267590-7"}], "contactos": []}, {"id": "c58", "tipo": "independiente", "exportadora": "", "nombre": "LAS DOS AMALIAS", "zona": "PAINE", "superficie": "167.0", "gps": "", "notas": "", "cultivos": [{"nom": "NOGAL", "sup": 113.0}, {"nom": "VID DE MESA", "sup": 54.0}], "razonSocial": [{"nom": "AGRIC. LAS DOS AMALIAS LTDA.", "rut": "76321704-3"}], "contactos": [{"nom": "Dragomir Ljubetic", "rol": "Asesor"}]}, {"id": "c59", "tipo": "independiente", "exportadora": "", "nombre": "AGRICOLA J. LECAROS LIMITADA", "zona": "COLINA", "superficie": "59.0", "gps": "", "notas": "Holding: LECAROS", "cultivos": [{"nom": "CEREZO", "sup": 20.0}, {"nom": "NECTARINO", "sup": 6.0}, {"nom": "VID DE MESA", "sup": 33.0}], "razonSocial": [{"nom": "AGRICOLA J. LECAROS LIMITADA", "rut": "76723330-2"}], "contactos": [{"nom": "Jose Manuel Astorga", "rol": "Asesor"}]}, {"id": "c60", "tipo": "independiente", "exportadora": "", "nombre": "AGRICOLA SANTA ROSARIO", "zona": "PAINE", "superficie": "42.0", "gps": "", "notas": "Holding: LECAROS", "cultivos": [{"nom": "CEREZO", "sup": 25.0}, {"nom": "VID DE MESA", "sup": 17.0}], "razonSocial": [{"nom": "AGRICOLA SANTA ROSARIO", "rut": "77472270-K"}], "contactos": [{"nom": "Jose Manuel Astorga", "rol": "Asesor"}]}, {"id": "c61", "tipo": "independiente", "exportadora": "", "nombre": "LONGOVILO-CANDELARIA", "zona": "PAINE", "superficie": "170.0", "gps": "", "notas": "", "cultivos": [{"nom": "NOGAL", "sup": 170.0}], "razonSocial": [{"nom": "LA CANDELARIA", "rut": "77997302-6"}], "contactos": [{"nom": "Francisco García Huidobro", "rol": "Asesor"}]}, {"id": "c62", "tipo": "independiente", "exportadora": "", "nombre": "MATTE GARCES CLAUDIO ALEJANDRO", "zona": "BUIN", "superficie": "55.47", "gps": "", "notas": "", "cultivos": [{"nom": "CIRUELO EUROPEO", "sup": 1.2}, {"nom": "NOGAL", "sup": 54.27}], "razonSocial": [{"nom": "MATTE GARCES CLAUDIO ALEJANDRO", "rut": "3643791-k"}], "contactos": []}, {"id": "c63", "tipo": "independiente", "exportadora": "", "nombre": "METROPOLITANA", "zona": "LAMPA", "superficie": "77.0", "gps": "", "notas": "", "cultivos": [{"nom": "CEREZO", "sup": 38.0}, {"nom": "LIMONERO", "sup": 7.0}, {"nom": "NARANJO", "sup": 15.0}, {"nom": "NOGAL", "sup": 17.0}], "razonSocial": [{"nom": "AGRIC. METROPOLITANA LTDA.", "rut": "76793530-7"}], "contactos": [{"nom": "Victor Vicencio", "rol": "Asesor"}]}, {"id": "c64", "tipo": "independiente", "exportadora": "", "nombre": "NETLAND", "zona": "ISLA DE MAIPO", "superficie": "", "gps": "", "notas": "", "cultivos": [], "razonSocial": [{"nom": "AGRIC. STA. TERESA DE NALTAHUA LTDA.", "rut": "78048850-6"}], "contactos": []}, {"id": "c65", "tipo": "independiente", "exportadora": "", "nombre": "AG.CASAS LO HERRERA LTDA.", "zona": "PAINE", "superficie": "75.0", "gps": "", "notas": "Holding: OSCAR PEREZ", "cultivos": [{"nom": "CEREZO", "sup": 5.0}, {"nom": "CIRUELO EUROPEO", "sup": 61.0}, {"nom": "VID DE MESA", "sup": 9.0}], "razonSocial": [{"nom": "AG.CASAS LO HERRERA LTDA.", "rut": "76.383.836-6"}], "contactos": []}, {"id": "c66", "tipo": "independiente", "exportadora": "", "nombre": "AGRICOLA DON OSCAR LIMITADA", "zona": "PAINE", "superficie": "124.0", "gps": "", "notas": "Holding: OSCAR PEREZ", "cultivos": [{"nom": "ALMENDRO", "sup": 45.0}, {"nom": "CEREZO", "sup": 24.0}, {"nom": "CIRUELO EUROPEO", "sup": 26.0}, {"nom": "NECTARINO", "sup": 3.0}, {"nom": "VID DE MESA", "sup": 26.0}], "razonSocial": [{"nom": "AGRICOLA DON OSCAR LIMITADA", "rut": "76.255.253-1"}], "contactos": []}, {"id": "c67", "tipo": "independiente", "exportadora": "", "nombre": "PASSALACQUA", "zona": "COLINA", "superficie": "", "gps": "", "notas": "", "cultivos": [], "razonSocial": [{"nom": "PASSALACQUA CASTELLARO DANIELLA", "rut": "13828892-7"}], "contactos": []}, {"id": "c68", "tipo": "independiente", "exportadora": "", "nombre": "PEREZ FERNANDEZ OSCAR", "zona": "SAN BERNARDO", "superficie": "47.4", "gps": "", "notas": "", "cultivos": [{"nom": "CEREZO", "sup": 4.46}, {"nom": "CIRUELO JAPONES", "sup": 21.12}, {"nom": "NECTARINO", "sup": 3.92}, {"nom": "NOGAL", "sup": 9.0}, {"nom": "PERAL", "sup": 4.8}, {"nom": "VID DE MESA", "sup": 4.1}], "razonSocial": [{"nom": "PEREZ FERNANDEZ OSCAR", "rut": "3635636-7"}], "contactos": []}, {"id": "c69", "tipo": "independiente", "exportadora": "", "nombre": "RAFAEL CARDONE SOLARI Y OTRO", "zona": "PAINE", "superficie": "42.0", "gps": "", "notas": "", "cultivos": [{"nom": "CEREZO", "sup": 42.0}], "razonSocial": [{"nom": "RAFAEL CARDONE SOLARI Y OTRO", "rut": "50.147.050-3"}], "contactos": []}, {"id": "c70", "tipo": "independiente", "exportadora": "", "nombre": "RAMON ACHURRA", "zona": "BUIN", "superficie": "129.9", "gps": "", "notas": "", "cultivos": [{"nom": "CEREZO", "sup": 23.79}, {"nom": "CIRUELO EUROPEO", "sup": 18.4}, {"nom": "CIRUELO JAPONES", "sup": 12.21}, {"nom": "DURAZNERO TIPO CONSERVERO", "sup": 7.72}, {"nom": "MANZANO ROJO", "sup": 15.31}, {"nom": "NECTARINO", "sup": 9.37}, {"nom": "PERAL", "sup": 43.1}], "razonSocial": [{"nom": "RAMON ACHURRA Y COMPAÑÍA SPA", "rut": "78183610-9"}], "contactos": [{"nom": "Andrés Ureta", "rol": "Asesor"}]}, {"id": "c71", "tipo": "independiente", "exportadora": "", "nombre": "AGRIC. MILLAHUE LTDA.", "zona": "PUDAHUEL", "superficie": "", "gps": "", "notas": "Holding: RIO KING", "cultivos": [], "razonSocial": [{"nom": "AGRIC. MILLAHUE LTDA.", "rut": "78415820-9"}], "contactos": [{"nom": "Etiene Etcheverry", "rol": "Asesor"}]}, {"id": "c72", "tipo": "exportadora", "exportadora": "Rio King", "nombre": "HACIENDA CHADA S.A.", "zona": "CALERA DE TANGO", "superficie": "221.31", "gps": "", "notas": "Holding: RIO KING", "cultivos": [{"nom": "CEREZO", "sup": 1.31}, {"nom": "MANDARINO", "sup": 17.0}, {"nom": "VID DE MESA", "sup": 203.0}], "razonSocial": [{"nom": "HACIENDA CHADA S.A.", "rut": "96720590-7"}], "contactos": [{"nom": "Rio King", "rol": "Asesor"}]}, {"id": "c73", "tipo": "independiente", "exportadora": "", "nombre": "RODRIGUEZ LABBE ALFONSO MATIAS", "zona": "LAMPA", "superficie": "97.7", "gps": "", "notas": "", "cultivos": [{"nom": "NOGAL", "sup": 97.7}], "razonSocial": [{"nom": "RODRIGUEZ LABBE ALFONSO MATIAS", "rut": "4661232-9"}], "contactos": []}, {"id": "c74", "tipo": "independiente", "exportadora": "", "nombre": "AGR. PULMODON LTDA.", "zona": "LA PINTANA", "superficie": "77.0", "gps": "", "notas": "Holding: RRWINES", "cultivos": [{"nom": "CIRUELO EUROPEO", "sup": 37.0}, {"nom": "VID VINIFERA", "sup": 40.0}], "razonSocial": [{"nom": "AGR. PULMODON LTDA.", "rut": "76.125.892-3"}], "contactos": [{"nom": "Andrés Ureta", "rol": "Asesor"}]}, {"id": "c75", "tipo": "independiente", "exportadora": "", "nombre": "AGRICOLA LA ESTRELLA S.A.", "zona": "LA PINTANA", "superficie": "60.0", "gps": "", "notas": "Holding: RRWINES", "cultivos": [{"nom": "CEREZO", "sup": 60.0}], "razonSocial": [{"nom": "AGRICOLA LA ESTRELLA S.A.", "rut": "76427839-9"}], "contactos": [{"nom": "Andrés Ureta", "rol": "Asesor"}]}, {"id": "c76", "tipo": "independiente", "exportadora": "", "nombre": "EXPORT. SERGIO RUIZ TAGLE HUMERES LTDA.", "zona": "TILTIL", "superficie": "38.0", "gps": "", "notas": "Holding: RUTA", "cultivos": [{"nom": "CEREZO", "sup": 38.0}], "razonSocial": [{"nom": "EXPORT. SERGIO RUIZ TAGLE HUMERES LTDA.", "rut": "76005335-k"}], "contactos": [{"nom": "Dragomir Ljubetic", "rol": "Asesor"}]}, {"id": "c77", "tipo": "independiente", "exportadora": "", "nombre": "FRUTERA EURO AMERICA S.A.", "zona": "TILTIL", "superficie": "13.65", "gps": "", "notas": "Holding: RUTA", "cultivos": [{"nom": "CIRUELO EUROPEO", "sup": 13.65}], "razonSocial": [{"nom": "FRUTERA EURO AMERICA S.A.", "rut": "96869100-7"}], "contactos": [{"nom": "Dragomir Ljubetic", "rol": "Asesor"}]}, {"id": "c78", "tipo": "independiente", "exportadora": "", "nombre": "AGRIC. E INMOB. VALLE STA. ELENA LTDA.", "zona": "COLINA", "superficie": "115.1", "gps": "", "notas": "Holding: SAN JOSE", "cultivos": [{"nom": "CIRUELO EUROPEO", "sup": 43.25}, {"nom": "NOGAL", "sup": 71.85}], "razonSocial": [{"nom": "AGRIC. E INMOB. VALLE STA. ELENA LTDA.", "rut": "96698480-5"}], "contactos": []}, {"id": "c79", "tipo": "independiente", "exportadora": "", "nombre": "AGRICOLA SAN JOSE LTDA.", "zona": "PAINE", "superficie": "213.0", "gps": "", "notas": "Holding: SAN JOSE", "cultivos": [{"nom": "VID DE MESA", "sup": 213.0}], "razonSocial": [{"nom": "AGRICOLA SAN JOSE LTDA.", "rut": "77216850-0"}], "contactos": [{"nom": "Francisco Amar", "rol": "Asesor"}]}, {"id": "c80", "tipo": "independiente", "exportadora": "", "nombre": "SOC. AGRIC. VALLE DE COLINA S.A.", "zona": "COLINA", "superficie": "50.0", "gps": "", "notas": "Holding: SAN JOSE", "cultivos": [{"nom": "VID DE MESA", "sup": 50.0}], "razonSocial": [{"nom": "SOC. AGRIC. VALLE DE COLINA S.A.", "rut": "79968520-4"}], "contactos": [{"nom": "Francisco Amar", "rol": "Asesor"}]}, {"id": "c81", "tipo": "independiente", "exportadora": "", "nombre": "AGRIC. STA. FILOMENA LTDA.", "zona": "PAINE", "superficie": "206.0", "gps": "", "notas": "Holding: SANTA FILOMENA", "cultivos": [{"nom": "CEREZO", "sup": 30.0}, {"nom": "CIRUELO EUROPEO", "sup": 8.0}, {"nom": "NECTARINO", "sup": 25.0}, {"nom": "NOGAL", "sup": 85.0}, {"nom": "VID DE MESA", "sup": 4.0}, {"nom": "VID VINIFERA", "sup": 54.0}], "razonSocial": [{"nom": "AGRIC. STA. FILOMENA LTDA.", "rut": "79672790-k"}], "contactos": [{"nom": "Dragomir Ljubetic", "rol": "Asesor"}]}, {"id": "c82", "tipo": "independiente", "exportadora": "", "nombre": "VALLE MERCEDES DEL MAIPO", "zona": "PAINE", "superficie": "196.0", "gps": "", "notas": "Holding: SANTA FILOMENA", "cultivos": [{"nom": "DURAZNERO CONSUMO FRESCO", "sup": 21.0}, {"nom": "NECTARINO", "sup": 24.0}, {"nom": "NOGAL", "sup": 21.0}, {"nom": "VID VINIFERA", "sup": 130.0}], "razonSocial": [{"nom": "VALLE MERCEDES DEL MAIPO", "rut": "76058495-9"}], "contactos": [{"nom": "Dragomir Ljubetic", "rol": "Asesor"}]}, {"id": "c83", "tipo": "independiente", "exportadora": "", "nombre": "SANTA JULIA", "zona": "BUIN", "superficie": "167.82", "gps": "", "notas": "", "cultivos": [{"nom": "CEREZO", "sup": 66.0}, {"nom": "CIRUELO JAPONES", "sup": 8.0}, {"nom": "DURAZNERO CONSUMO FRESCO", "sup": 1.82}, {"nom": "NOGAL", "sup": 47.0}, {"nom": "VID DE MESA", "sup": 45.0}], "razonSocial": [{"nom": "AGRIC. Y COMERC. STA. JULIA LTDA.", "rut": "78990580-0"}], "contactos": [{"nom": "Jose Manuel Astorga", "rol": "Asesor"}]}, {"id": "c84", "tipo": "independiente", "exportadora": "", "nombre": "SIEMEL", "zona": "BUIN", "superficie": "404.09", "gps": "", "notas": "", "cultivos": [{"nom": "ALMENDRO", "sup": 68.82}, {"nom": "CEREZO", "sup": 70.0}, {"nom": "CIRUELO EUROPEO", "sup": 265.27}], "razonSocial": [{"nom": "AGRIC. SIEMEL LTDA.", "rut": "77072740-5"}], "contactos": [{"nom": "Jose Manuel Astorga", "rol": "Asesor"}]}, {"id": "c85", "tipo": "independiente", "exportadora": "", "nombre": "SOC. AGR. Y GAN. LA ENCIERRA S", "zona": "PAINE", "superficie": "42.0", "gps": "", "notas": "", "cultivos": [{"nom": "NOGAL", "sup": 42.0}], "razonSocial": [{"nom": "SOC. AGR. Y GAN. LA ENCIERRA S", "rut": "76.775.098-6"}], "contactos": []}, {"id": "c86", "tipo": "independiente", "exportadora": "", "nombre": "SOC. AGRIC. HUIDIF LTDA.", "zona": "PIRQUE", "superficie": "83.41", "gps": "", "notas": "", "cultivos": [{"nom": "NOGAL", "sup": 83.41}], "razonSocial": [{"nom": "SOC. AGRIC. HUIDIF LTDA.", "rut": "87752100-1"}], "contactos": []}, {"id": "c87", "tipo": "independiente", "exportadora": "", "nombre": "SOC. AGRIC. LA ENSENADA LTDA.", "zona": "CALERA DE TANGO", "superficie": "55.46", "gps": "", "notas": "", "cultivos": [{"nom": "NOGAL", "sup": 55.46}], "razonSocial": [{"nom": "SOC. AGRIC. LA ENSENADA LTDA.", "rut": "76027118-7"}], "contactos": []}, {"id": "c88", "tipo": "exportadora", "exportadora": "Gesex", "nombre": "SOC. AGRIC. LLAHUEN S.A.", "zona": "PAINE", "superficie": "13.84", "gps": "", "notas": "", "cultivos": [{"nom": "VID DE MESA", "sup": 13.84}], "razonSocial": [{"nom": "SOC. AGRIC. LLAHUEN S.A.", "rut": "78295150-5"}], "contactos": []}, {"id": "c89", "tipo": "independiente", "exportadora": "", "nombre": "SOC. AGRIC. LOS TILOS LTDA.", "zona": "ISLA DE MAIPO", "superficie": "128.52", "gps": "", "notas": "", "cultivos": [{"nom": "ALMENDRO", "sup": 47.33}, {"nom": "CIRUELO EUROPEO", "sup": 14.17}, {"nom": "NOGAL", "sup": 67.02}], "razonSocial": [{"nom": "SOC. AGRIC. LOS TILOS LTDA.", "rut": "89136700-7"}], "contactos": []}, {"id": "c90", "tipo": "independiente", "exportadora": "", "nombre": "SOC. AGRIC. QUINATRAHUE S.A.", "zona": "COLINA", "superficie": "", "gps": "", "notas": "", "cultivos": [], "razonSocial": [{"nom": "SOC. AGRIC. QUINATRAHUE S.A.", "rut": "84945100-6"}], "contactos": []}, {"id": "c91", "tipo": "independiente", "exportadora": "", "nombre": "SOC. AGRIC. STO. DOMINGO DE LORETO Y CIA. LTDA.", "zona": "CALERA DE TANGO", "superficie": "", "gps": "", "notas": "", "cultivos": [], "razonSocial": [{"nom": "SOC. AGRIC. STO. DOMINGO DE LORETO Y CIA. LTDA.", "rut": "76968330-5"}], "contactos": []}, {"id": "c92", "tipo": "independiente", "exportadora": "", "nombre": "SOC. AGRIC. VALBIFRUT LTDA.", "zona": "BUIN", "superficie": "49.67", "gps": "", "notas": "", "cultivos": [{"nom": "NOGAL", "sup": 49.67}], "razonSocial": [{"nom": "SOC. AGRIC. VALBIFRUT LTDA.", "rut": "79968520-4"}], "contactos": []}, {"id": "c93", "tipo": "independiente", "exportadora": "", "nombre": "SOC. PRIMAVERA AGRIC. LTDA.", "zona": "CALERA DE TANGO", "superficie": "87.0", "gps": "", "notas": "", "cultivos": [{"nom": "CIRUELO EUROPEO", "sup": 31.0}, {"nom": "CIRUELO JAPONES", "sup": 5.0}, {"nom": "MANDARINO", "sup": 7.0}, {"nom": "NARANJO", "sup": 7.0}, {"nom": "NOGAL", "sup": 37.0}], "razonSocial": [{"nom": "SOC. PRIMAVERA AGRIC. LTDA.", "rut": "79627880-3"}], "contactos": []}, {"id": "c94", "tipo": "independiente", "exportadora": "", "nombre": "SOC. PUCARA AGRIC. LTDA.", "zona": "SAN BERNARDO", "superficie": "59.14", "gps": "", "notas": "", "cultivos": [{"nom": "DURAZNERO TIPO CONSERVERO", "sup": 17.4}, {"nom": "NOGAL", "sup": 41.74}], "razonSocial": [{"nom": "SOC. PUCARA AGRIC. LTDA.", "rut": "76735910-1"}], "contactos": []}, {"id": "c95", "tipo": "independiente", "exportadora": "", "nombre": "SOCIEDAD AGROCOMERCIAL SWEET V", "zona": "LAMPA", "superficie": "52.0", "gps": "", "notas": "", "cultivos": [{"nom": "VID DE MESA", "sup": 52.0}], "razonSocial": [{"nom": "SOCIEDAD AGROCOMERCIAL SWEET V", "rut": "771843263"}], "contactos": []}, {"id": "c96", "tipo": "independiente", "exportadora": "", "nombre": "PARRONALES TINAMOU AGRICOLA LT", "zona": "ISLA DE MAIPO", "superficie": "53.0", "gps": "", "notas": "Holding: SUBSOLE", "cultivos": [{"nom": "VID DE MESA", "sup": 53.0}], "razonSocial": [{"nom": "PARRONALES TINAMOU AGRICOLA LT", "rut": "76528525-9"}], "contactos": [{"nom": "Gabriel Marfán", "rol": "Asesor"}]}, {"id": "c97", "tipo": "independiente", "exportadora": "", "nombre": "SOC.AGRICOLA LOS ACACIOS LTDA", "zona": "BUIN", "superficie": "33.0", "gps": "", "notas": "Holding: SUBSOLE", "cultivos": [{"nom": "VID DE MESA", "sup": 33.0}], "razonSocial": [{"nom": "SOC.AGRICOLA LOS ACACIOS LTDA", "rut": "76215600-8"}], "contactos": [{"nom": "Gabriel Marfán", "rol": "Asesor"}]}, {"id": "c98", "tipo": "exportadora", "exportadora": "Unifrutti", "nombre": "AGRIC. UNI KIWI S.A.", "zona": "BUIN", "superficie": "106.35", "gps": "", "notas": "Holding: UNIFRUTTI", "cultivos": [{"nom": "CEREZO", "sup": 15.8}, {"nom": "CIRUELO JAPONES", "sup": 1.9}, {"nom": "KIWI", "sup": 41.82}, {"nom": "NECTARINO", "sup": 10.75}, {"nom": "PERAL", "sup": 36.08}], "razonSocial": [{"nom": "AGRIC. UNI KIWI S.A.", "rut": "79567390-3"}], "contactos": [{"nom": "Juan Carlos Merlo", "rol": "Asesor"}]}, {"id": "c99", "tipo": "exportadora", "exportadora": "Unifrutti", "nombre": "AGRICOLA MEGA S.A.", "zona": "PAINE", "superficie": "86.93", "gps": "", "notas": "Holding: UNIFRUTTI", "cultivos": [{"nom": "CEREZO", "sup": 15.33}, {"nom": "CIRUELO EUROPEO", "sup": 12.18}, {"nom": "NECTARINO", "sup": 5.22}, {"nom": "PERAL", "sup": 20.9}, {"nom": "VID DE MESA", "sup": 33.3}], "razonSocial": [{"nom": "AGRICOLA MEGA S.A.", "rut": "85543100-9"}], "contactos": [{"nom": "Juan Carlos Merlo", "rol": "Asesor"}]}, {"id": "c100", "tipo": "exportadora", "exportadora": "Unifrutti", "nombre": "BELLA TERRA S.A.", "zona": "BUIN", "superficie": "91.74", "gps": "", "notas": "Holding: UNIFRUTTI", "cultivos": [{"nom": "CEREZO", "sup": 9.6}, {"nom": "MANZANO ROJO", "sup": 11.23}, {"nom": "PERAL", "sup": 26.28}, {"nom": "VID DE MESA", "sup": 44.63}], "razonSocial": [{"nom": "BELLA TERRA S.A.", "rut": "96655440-1"}], "contactos": [{"nom": "Juan Carlos Merlo", "rol": "Asesor"}]}, {"id": "c101", "tipo": "exportadora", "exportadora": "Unifrutti", "nombre": "EXPORT. UNIFRUTTI TRADERS LTDA.", "zona": "BUIN", "superficie": "75.66", "gps": "", "notas": "Holding: UNIFRUTTI", "cultivos": [{"nom": "CEREZO", "sup": 14.44}, {"nom": "KIWI GOLD O KIWI AMARILLO", "sup": 2.06}, {"nom": "NECTARINO", "sup": 37.52}, {"nom": "VID DE MESA", "sup": 21.64}], "razonSocial": [{"nom": "EXPORT. UNIFRUTTI TRADERS LTDA.", "rut": "89258800-7"}], "contactos": [{"nom": "Juan Carlos Merlo", "rol": "Asesor"}]}, {"id": "c102", "tipo": "exportadora", "exportadora": "Unifrutti", "nombre": "VERZUOLO S.A.", "zona": "PAINE", "superficie": "7.2", "gps": "", "notas": "Holding: UNIFRUTTI", "cultivos": [{"nom": "CEREZO", "sup": 7.2}], "razonSocial": [{"nom": "VERZUOLO S.A.", "rut": "99571690-9"}], "contactos": [{"nom": "Juan Carlos Merlo", "rol": "Asesor"}]}, {"id": "c103", "tipo": "independiente", "exportadora": "", "nombre": "AGRICOLA LA GRULLA LTDA", "zona": "PENAFLOR", "superficie": "75.0", "gps": "", "notas": "Holding: VALVALLE-GRUPO NICOLAS VALDES", "cultivos": [{"nom": "CEREZO", "sup": 75.0}], "razonSocial": [{"nom": "AGRICOLA LA GRULLA LTDA", "rut": "77133896-8"}], "contactos": [{"nom": "Cristian Abud", "rol": "Asesor"}]}, {"id": "c104", "tipo": "independiente", "exportadora": "", "nombre": "SOC. AGRIC. LEV LTDA.", "zona": "PENAFLOR", "superficie": "140.0", "gps": "", "notas": "Holding: VALVALLE-GRUPO NICOLAS VALDES", "cultivos": [{"nom": "CEREZO", "sup": 20.0}, {"nom": "NOGAL", "sup": 120.0}], "razonSocial": [{"nom": "SOC. AGRIC. LEV LTDA.", "rut": "76102561-9"}], "contactos": [{"nom": "Cristian Abud", "rol": "Asesor"}]}, {"id": "c105", "tipo": "independiente", "exportadora": "", "nombre": "VICONTO", "zona": "BUIN", "superficie": "267.0", "gps": "", "notas": "", "cultivos": [{"nom": "CEREZO", "sup": 15.0}, {"nom": "NECTARINO", "sup": 27.0}, {"nom": "NOGAL", "sup": 225.0}], "razonSocial": [{"nom": "FRUTIC. VICONTO S.A.", "rut": "96512190-0"}], "contactos": [{"nom": "Francisco García Huidobro", "rol": "Asesor"}]}, {"id": "c106", "tipo": "exportadora", "exportadora": "UNIFRUTTI", "nombre": "AEROPUERTO", "zona": "LAMPA", "superficie": "423.28", "gps": "", "notas": "", "cultivos": [{"nom": "CEREZO", "sup": 16.25}, {"nom": "MANDARINO", "sup": 98.25}, {"nom": "NARANJO", "sup": 58.6}, {"nom": "NOGAL", "sup": 225.18}, {"nom": "VID DE MESA", "sup": 25.0}], "razonSocial": [{"nom": "AGRIC. AEROPUERTO S.P.A.", "rut": "96.761.800-4"}], "contactos": [{"nom": "Juan Carlos Merlo", "rol": "Asesor"}]}, {"id": "c107", "tipo": "independiente", "exportadora": "", "nombre": "AGRICOM", "zona": "EL MONTE", "superficie": "600.56", "gps": "", "notas": "", "cultivos": [{"nom": "ALMENDRO", "sup": 60.0}, {"nom": "CEREZO", "sup": 23.0}, {"nom": "CIRUELO JAPONES", "sup": 19.17}, {"nom": "LIMONERO", "sup": 18.54}, {"nom": "MANDARINO", "sup": 46.32}, {"nom": "NOGAL", "sup": 121.0}, {"nom": "PALTO", "sup": 299.58}, {"nom": "VID DE MESA", "sup": 12.95}], "razonSocial": [{"nom": "AGRIC. POLPAICO S.A.", "rut": "76.412.771-4"}], "contactos": [{"nom": "Carolina Cruz", "rol": "Asesor"}]}, {"id": "c108", "tipo": "exportadora", "exportadora": "Agrofruta", "nombre": "AGROFRUTA", "zona": "BUIN", "superficie": "68.67", "gps": "", "notas": "", "cultivos": [{"nom": "CEREZO", "sup": 20.7}, {"nom": "CIRUELO JAPONES", "sup": 10.16}, {"nom": "DURAZNERO CONSUMO FRESCO", "sup": 5.58}, {"nom": "NECTARINO", "sup": 9.7}, {"nom": "VID DE MESA", "sup": 22.53}], "razonSocial": [{"nom": "AGROFRUTA LTDA.", "rut": "77.618.380-6"}], "contactos": []}, {"id": "c109", "tipo": "independiente", "exportadora": "", "nombre": "AT AGRICOLA", "zona": "ISLA DE MAIPO", "superficie": "28.0", "gps": "", "notas": "", "cultivos": [{"nom": "MANDARINO", "sup": 28.0}], "razonSocial": [{"nom": "AT AGRICOLA S.P.A.", "rut": "76.066.204-6"}], "contactos": [{"nom": "Gama", "rol": "Asesor"}]}, {"id": "c110", "tipo": "independiente", "exportadora": "", "nombre": "DEL MONTE", "zona": "LAMPA", "superficie": "64.44", "gps": "", "notas": "", "cultivos": [{"nom": "CEREZO", "sup": 14.44}, {"nom": "VID DE MESA", "sup": 50.0}], "razonSocial": [{"nom": "AGRICOLA U.A.C. LTDA", "rut": "79534860-3"}], "contactos": [{"nom": "Arturo Ramirez", "rol": "Asesor"}]}, {"id": "c111", "tipo": "independiente", "exportadora": "", "nombre": "EXSER", "zona": "COLINA", "superficie": "178.47", "gps": "", "notas": "", "cultivos": [{"nom": "MANDARINO", "sup": 89.26}, {"nom": "VID DE MESA", "sup": 89.21}], "razonSocial": [{"nom": "SOC. AGRIC. BELLAVISTA LTDA.", "rut": "79.776.960-6"}], "contactos": []}, {"id": "c112", "tipo": "independiente", "exportadora": "", "nombre": "FRUTIC. Y GANAD. STA. MARTA SA.", "zona": "BUIN", "superficie": "278.38", "gps": "", "notas": "Holding: GESEX", "cultivos": [{"nom": "CEREZO", "sup": 27.0}, {"nom": "CIRUELO JAPONES", "sup": 12.78}, {"nom": "DURAZNERO CONSUMO FRESCO", "sup": 9.6}, {"nom": "MANDARINO", "sup": 46.0}, {"nom": "NECTARINO", "sup": 123.0}, {"nom": "VID DE MESA", "sup": 60.0}], "razonSocial": [{"nom": "FRUTIC. Y GANAD. STA. MARTA SA.", "rut": "79.535.880-3"}], "contactos": [{"nom": "Dragomir Ljubetic", "rol": "Asesor"}]}, {"id": "c113", "tipo": "independiente", "exportadora": "", "nombre": "INV. SAN FRANCISCO SPA.", "zona": "BUIN", "superficie": "310.3", "gps": "", "notas": "Holding: GESEX", "cultivos": [{"nom": "CEREZO", "sup": 37.0}, {"nom": "CIRUELO JAPONES", "sup": 7.0}, {"nom": "DURAZNERO CONSUMO FRESCO", "sup": 26.53}, {"nom": "DURAZNERO TIPO CONSERVERO", "sup": 23.0}, {"nom": "NECTARINO", "sup": 102.0}, {"nom": "NOGAL", "sup": 4.0}, {"nom": "VID DE MESA", "sup": 110.77}], "razonSocial": [{"nom": "INV. SAN FRANCISCO SPA.", "rut": "96.635.750-9"}], "contactos": [{"nom": "Rodrigo Sapiain", "rol": "Asesor"}]}, {"id": "c114", "tipo": "independiente", "exportadora": "", "nombre": "SOC. AGRIC. CONVENTO VIEJO SPA.", "zona": "BUIN", "superficie": "308.6", "gps": "", "notas": "Holding: GESEX", "cultivos": [{"nom": "CEREZO", "sup": 28.8}, {"nom": "DURAZNERO CONSUMO FRESCO", "sup": 10.7}, {"nom": "VID DE MESA", "sup": 269.1}], "razonSocial": [{"nom": "SOC. AGRIC. CONVENTO VIEJO SPA.", "rut": "79.737.880-1"}], "contactos": [{"nom": "Rodrigo Sapiain", "rol": "Asesor"}]}, {"id": "c115", "tipo": "exportadora", "exportadora": "Gesex", "nombre": "SOC. AGRIC. LA HORNILLA SPA.", "zona": "BUIN", "superficie": "389.17", "gps": "", "notas": "Holding: GESEX", "cultivos": [{"nom": "CEREZO", "sup": 31.34}, {"nom": "CIRUELO JAPONES", "sup": 20.0}, {"nom": "DURAZNERO CONSUMO FRESCO", "sup": 44.0}, {"nom": "DURAZNERO TIPO CONSERVERO", "sup": 1.02}, {"nom": "NECTARINO", "sup": 111.21}, {"nom": "PALTO", "sup": 13.4}, {"nom": "VID DE MESA", "sup": 168.2}], "razonSocial": [{"nom": "SOC. AGRIC. LA HORNILLA SPA.", "rut": "79.646.350-3"}], "contactos": [{"nom": "Dragomir Ljubetic", "rol": "Asesor"}]}, {"id": "c116", "tipo": "independiente", "exportadora": "", "nombre": "HUERTOS CARMEN SOC. AGRIC. LTDA.", "zona": "COLINA", "superficie": "23.75", "gps": "", "notas": "Holding: GIOIA", "cultivos": [{"nom": "NECTARINO", "sup": 3.75}, {"nom": "NOGAL", "sup": 10.0}, {"nom": "VID DE MESA", "sup": 10.0}], "razonSocial": [{"nom": "HUERTOS CARMEN SOC. AGRIC. LTDA.", "rut": "84.810.200-8"}], "contactos": [{"nom": "Vicente Valdivieso", "rol": "Asesor"}]}, {"id": "c117", "tipo": "independiente", "exportadora": "", "nombre": "SOC. AGRIC. ANCONA LTDA.", "zona": "COLINA", "superficie": "10.0", "gps": "", "notas": "Holding: GIOIA", "cultivos": [{"nom": "VID DE MESA", "sup": 10.0}], "razonSocial": [{"nom": "SOC. AGRIC. ANCONA LTDA.", "rut": "79.745.330-7"}], "contactos": [{"nom": "Vicente Valdivieso", "rol": "Asesor"}]}, {"id": "c118", "tipo": "independiente", "exportadora": "", "nombre": "GRUPO SUTIL", "zona": "SAN BERNARDO", "superficie": "218.02", "gps": "", "notas": "", "cultivos": [{"nom": "NOGAL", "sup": 218.02}], "razonSocial": [{"nom": "AGRICOLA SUTIL S.A.", "rut": "76972567-9"}], "contactos": [{"nom": "Nicolas Vargas", "rol": "Asesor"}]}, {"id": "c119", "tipo": "exportadora", "exportadora": "Rio Blanco", "nombre": "RIO BLANCO", "zona": "POLPAICO", "superficie": "91.0", "gps": "", "notas": "", "cultivos": [{"nom": "VID DE MESA", "sup": 91.0}], "razonSocial": [{"nom": "AGRIC. RANCHO BLANCO SPA.", "rut": "78.113.530-5"}], "contactos": [{"nom": "Renzo Peppi", "rol": "Asesor"}]}, {"id": "c120", "tipo": "independiente", "exportadora": "", "nombre": "ACONCAGUA FOODS", "zona": "BUIN", "superficie": "193.85", "gps": "", "notas": "", "cultivos": [{"nom": "DURAZNERO TIPO CONSERVERO", "sup": 193.85}], "razonSocial": [{"nom": "ACONCAGUA FOODS S.A.", "rut": "76099789-7"}], "contactos": [{"nom": "Alain Boulet", "rol": "Asesor"}]}, {"id": "c121", "tipo": "independiente", "exportadora": "", "nombre": "BUNSTER Y TAGLE", "zona": "EL MONTE", "superficie": "275.0", "gps": "", "notas": "", "cultivos": [{"nom": "CEREZO", "sup": 15.0}, {"nom": "CIRUELO EUROPEO", "sup": 30.0}, {"nom": "MANDARINO", "sup": 120.0}, {"nom": "NOGAL", "sup": 110.0}], "razonSocial": [{"nom": "AGRICOLA BUNSTER Y TAGLE LIMIT", "rut": "79611530-0"}], "contactos": [{"nom": "Francisco García Huidobro", "rol": "Asesor"}]}, {"id": "c122", "tipo": "independiente", "exportadora": "", "nombre": "DANIELE", "zona": "EL MONTE", "superficie": "290.0", "gps": "", "notas": "", "cultivos": [{"nom": "ALMENDRO", "sup": 220.0}, {"nom": "CIRUELO JAPONES", "sup": 20.0}, {"nom": "DURAZNERO CONSUMO FRESCO", "sup": 20.0}, {"nom": "NECTARINO", "sup": 30.0}], "razonSocial": [{"nom": "INV. SAN DANIELE LTDA.", "rut": "86035200-1"}], "contactos": [{"nom": "Carlos Jofre", "rol": "Asesor"}]}, {"id": "c123", "tipo": "independiente", "exportadora": "", "nombre": "SOC. AGRIC. LA ISLITA LTDA.", "zona": "ISLA DE MAIPO", "superficie": "45.78", "gps": "", "notas": "", "cultivos": [{"nom": "VID DE MESA", "sup": 45.78}], "razonSocial": [{"nom": "SOC. AGRIC. LA ISLITA LTDA.", "rut": "84.068.700-7"}], "contactos": []}],
+    visitas: [],
+    pendientes: [],
+    contactos: []
+  };
+}
+
+// ─── HELPERS ──────────────────────────────────────────────
+function uid(){return '_'+Math.random().toString(36).substr(2,9);}
+function hoy(){return new Date().toISOString().split('T')[0];}
+function diasDesde(f){if(!f)return 9999;return Math.floor((new Date()-new Date(f))/864e5);}
+function sumarDias(f,n){const d=new Date(f);d.setDate(d.getDate()+parseInt(n));return d.toISOString().split('T')[0];}
+function iniciales(n){return(n||'?').split(' ').slice(0,2).map(x=>x[0]||'').join('').toUpperCase();}
+function ultimaVisita(id){return db.visitas.filter(v=>v.clienteId===id).sort((a,b)=>new Date(b.fecha)-new Date(a.fecha))[0]||null;}
+function pendActivos(id){return db.pendientes.filter(p=>p.clienteId===id&&!p.enviado);}
+
+function mostrarApp(){
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app-screen').style.display='flex';
+  document.getElementById('app-screen').style.flexDirection='column';
+  const ahora=new Date();
+  const dias=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+  const meses=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  document.getElementById('topbar-date').textContent=`${dias[ahora.getDay()]} ${ahora.getDate()} ${meses[ahora.getMonth()]}`;
+}
+
+function showView(v){
+  document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(x=>x.classList.remove('active'));
+  document.getElementById('view-'+v).classList.add('active');
+  document.getElementById('nav-'+v).classList.add('active');
+  if(v==='dashboard')renderDashboard();
+  if(v==='campos')renderCampos();
+  if(v==='directorio')renderDirectorio();
+  if(v==='pendientes')renderPendientes();
+}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+function openModal(id){document.getElementById(id).classList.add('open');}
+
+function renderDashboard(){
+  const ahora=new Date();
+  const sinVisita=db.campos.filter(c=>{const uv=ultimaVisita(c.id);return !uv||diasDesde(uv.fecha)>30;});
+  const pa=db.pendientes.filter(p=>!p.enviado);
+  const mes=db.visitas.filter(v=>{const d=new Date(v.fecha);return d.getMonth()===ahora.getMonth()&&d.getFullYear()===ahora.getFullYear();});
+  document.getElementById('s-campos').textContent=db.campos.length;
+  document.getElementById('s-pend').textContent=pa.length;
+  document.getElementById('s-aten').textContent=sinVisita.length;
+  document.getElementById('s-mes').textContent=mes.length;
+  const proximas=db.visitas.filter(v=>v.proximaVisita&&new Date(v.proximaVisita)>=ahora).sort((a,b)=>new Date(a.proximaVisita)-new Date(b.proximaVisita)).slice(0,3);
+  document.getElementById('dash-proximas').innerHTML=proximas.length===0?'<div style="font-size:12px;color:var(--text3);padding:4px 0 8px">Sin visitas programadas</div>':proximas.map(v=>{const c=db.campos.find(x=>x.id===v.clienteId);const dias=Math.ceil((new Date(v.proximaVisita)-ahora)/864e5);return`<div class="visit-card" onclick="openModalCampo('${v.clienteId}')"><div class="visit-card-header"><div class="visit-card-name">${c?c.nombre:'?'}</div><span class="prox-badge">En ${dias}d</span></div><div class="visit-card-text">${v.proximaVisita}</div></div>`;}).join('');
+  document.getElementById('dash-alerts').innerHTML=sinVisita.length===0?'<div style="font-size:12px;color:var(--text3);padding:4px 0 8px">✓ Todos visitados recientemente</div>':sinVisita.map(c=>{const uv=ultimaVisita(c.id);const dias=uv?diasDesde(uv.fecha):null;const admins=(c.contactos||[]).filter(x=>x.rol==='Administrador').map(x=>x.nom).join(', ')||'Sin admin';return`<div class="alert-card" onclick="openModalCampo('${c.id}')"><div class="alert-card-title">${c.nombre}</div><div class="alert-card-sub">${uv?`Hace ${dias} días · ${admins}`:'Sin visitas · '+admins}</div></div>`;}).join('');
+  const recientes=[...db.visitas].sort((a,b)=>new Date(b.fecha)-new Date(a.fecha)).slice(0,3);
+  document.getElementById('dash-visits').innerHTML=recientes.length===0?'<div style="font-size:12px;color:var(--text3)">Sin visitas aún</div>':recientes.map(v=>{const c=db.campos.find(x=>x.id===v.clienteId);return`<div class="visit-card" onclick="openModalCampo('${v.clienteId}')"><div class="visit-card-header"><div class="visit-card-name">${c?c.nombre:'?'}</div><div class="visit-card-date">${v.fecha}</div></div><div class="visit-card-text">${v.resumen.substring(0,90)}${v.resumen.length>90?'...':''}</div></div>`;}).join('');
+}
+
+function renderCampos(){
+  const q=(document.getElementById('campos-search').value||'').toLowerCase();
+  let campos=db.campos;
+  if(q)campos=campos.filter(c=>c.nombre.toLowerCase().includes(q)||(c.exportadora||'').toLowerCase().includes(q)||(c.zona||'').toLowerCase().includes(q)||(c.contactos||[]).some(ct=>ct.nom.toLowerCase().includes(q))||(c.cultivos||[]).some(cu=>cu.nom.toLowerCase().includes(q))||(c.razonSocial||[]).some(r=>r.nom.toLowerCase().includes(q)));
+  if(!campos.length){document.getElementById('campos-list').innerHTML=`<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><p>${q?'Sin resultados para "'+q+'"':'Sin campos.\nToca + Nuevo para comenzar.'}</p></div>`;return;}
+  document.getElementById('campos-list').innerHTML=campos.map(c=>{
+    const uv=ultimaVisita(c.id);const dias=uv?diasDesde(uv.fecha):null;
+    const pa=pendActivos(c.id);
+    const diasCls=dias===null||dias>30?'dias-warn':'dias-ok';
+    const diasTxt=dias===null?'Sin visitas':dias===0?'Hoy':dias===1?'Ayer':`Hace ${dias} días`;
+    const admins=(c.contactos||[]).filter(x=>x.rol==='Administrador').map(x=>x.nom).join(', ')||'Sin admin';
+    const cultPills=(c.cultivos||[]).map(cu=>`<span class="cultivo-pill">${cu.nom}${cu.sup?' · '+cu.sup+' há':''}</span>`).join('');
+    return`<div class="card" onclick="openModalCampo('${c.id}')"><div class="card-top"><div class="card-name">${c.nombre}</div><span class="badge ${c.tipo==='exportadora'?'badge-exp':'badge-ind'}">${c.tipo==='exportadora'?c.exportadora:'Independiente'}</span></div><div class="card-meta"><div class="card-meta-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>${admins}</div><div class="card-meta-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>${c.zona}${c.superficie?' · '+c.superficie+' há':''}</div></div>${cultPills?`<div class="cultivo-pills">${cultPills}</div>`:''}<div class="card-footer"><span class="${diasCls}">${diasTxt}</span>${pa.length?`<span class="pending-badge">${pa.length} pendiente${pa.length>1?'s':''}</span>`:'<span class="no-pending">✓ Al día</span>'}</div></div>`;
+  }).join('');
+}
+
+function openModalCampo(id){
+  currentCampoId=id;
+  const c=db.campos.find(x=>x.id===id);
+  document.getElementById('mc-nombre').textContent=c.nombre;
+  document.getElementById('mc-sub').textContent=c.tipo==='exportadora'?'Exportadora: '+c.exportadora:'Campo independiente';
+  let info=`<div class="info-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg><span class="info-lbl">Zona</span><span class="info-val">${c.zona}</span></div>`;
+  if(c.superficie)info+=`<div class="info-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z"/></svg><span class="info-lbl">Superficie</span><span class="info-val">${c.superficie} há</span></div>`;
+  if(c.notas)info+=`<div class="info-row" style="align-items:flex-start"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" style="margin-top:1px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span class="info-lbl">Notas</span><span class="info-val" style="font-weight:400;color:var(--text2)">${c.notas}</span></div>`;
+  const uv=ultimaVisita(id);
+  if(uv&&uv.proximaVisita){const dias=Math.ceil((new Date(uv.proximaVisita)-new Date())/864e5);info+=`<div class="info-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><span class="info-lbl">Próxima</span><span class="info-val"><span class="prox-badge">${uv.proximaVisita} (en ${dias}d)</span></span></div>`;}
+  document.getElementById('mc-info').innerHTML=info;
+  const cultivos=c.cultivos||[];
+  document.getElementById('mc-cultivos-sec').style.display=cultivos.length?'block':'none';
+  document.getElementById('mc-cultivos').innerHTML=cultivos.map(cu=>`<div style="display:flex;justify-content:space-between;font-size:13px;padding:5px 0;border-bottom:1px solid var(--border)"><span>${cu.nom}</span><span style="color:var(--text2)">${cu.sup} há</span></div>`).join('');
+  const rs=c.razonSocial||[];
+  document.getElementById('mc-rs-sec').style.display=rs.length?'block':'none';
+  document.getElementById('mc-rs').innerHTML=rs.map(r=>`<div class="rs-item">${r.nom}${r.rut?`<div class="rs-rut">${r.rut}</div>`:''}</div>`).join('');
+  const contactos=c.contactos||[];
+  document.getElementById('mc-contactos-sec').style.display=contactos.length?'block':'none';
+  document.getElementById('mc-contactos').innerHTML=contactos.map(ct=>`<span class="contact-chip"><strong>${ct.nom}</strong> <span class="contact-chip-role">${ct.rol}</span></span>`).join('');
+  const uv2=ultimaVisita(id);
+  document.getElementById('mc-prep-sec').style.display=uv2&&uv2.prep?'block':'none';
+  document.getElementById('mc-prep').innerHTML=uv2&&uv2.prep?`<div class="prep-box">${uv2.prep}</div>`:'';
+  const visitas=db.visitas.filter(v=>v.clienteId===id).sort((a,b)=>new Date(b.fecha)-new Date(a.fecha));
+  document.getElementById('mc-visitas').innerHTML=visitas.length===0?'<div style="font-size:13px;color:var(--text3)">Sin visitas registradas</div>':visitas.map(v=>{const pends=db.pendientes.filter(p=>p.visitaId===v.id);return`<div class="visit-hist-item"><div class="visit-hist-dot"></div><div class="visit-hist-date">${v.fecha}${v.rs?' · '+v.rs:''}</div><div class="visit-hist-text">${v.resumen}</div>${pends.length?'<div>'+pends.map(p=>`<div class="visit-pend-item ${p.enviado?'sent':''}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor">${p.enviado?'<path d="M9 11l3 3L22 4"/>':'<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/>'}</svg>${p.texto}</div>${p.notaEnvio?`<div class="visit-pend-nota">→ ${p.notaEnvio}</div>`:''}`).join('')+'</div>':''}${v.proximaVisita?`<div style="font-size:11px;color:var(--blue);margin-top:5px">📅 Próxima: ${v.proximaVisita}</div>`:''}<button style="background:none;border:1px solid var(--border);border-radius:6px;padding:4px 9px;font-size:11px;color:var(--text2);cursor:pointer;margin-top:7px;font-family:var(--font)" onclick="verMinuta('${v.id}')">Ver minuta</button></div>`;}).join('');
+  currentMapsUrl=c.gps||'';
+  document.getElementById('mc-maps-btn').style.opacity=c.gps?'1':'0.4';
+  openModal('modal-campo');
+}
+
+function abrirMaps(){if(currentMapsUrl)window.open(currentMapsUrl,'_blank');}
+
+function verMinuta(vid){
+  const v=db.visitas.find(x=>x.id===vid);
+  const c=db.campos.find(x=>x.id===v.clienteId);
+  const pends=db.pendientes.filter(p=>p.visitaId===vid);
+  let txt=`*Minuta de visita — APK Agro*\n━━━━━━━━━━━━━━━━━━━\n📍 Campo: ${c?c.nombre:'?'}\n`;
+  if(v.rs)txt+=`🏢 Razón social: ${v.rs}\n`;
+  txt+=`📅 Fecha: ${v.fecha}\n\n*Resumen:*\n${v.resumen}\n`;
+  if(pends.length){txt+=`\n*Compromisos pendientes:*\n`;pends.forEach((p,i)=>{txt+=`${i+1}. ${p.texto}${p.enviado?' ✅':''}\n`;if(p.notaEnvio)txt+=`   → ${p.notaEnvio}\n`;});}
+  if(v.proximaVisita)txt+=`\n📅 Próxima visita: ${v.proximaVisita}`;
+  document.getElementById('minuta-text').textContent=txt;
+  closeModal('modal-campo');openModal('modal-minuta');
+}
+
+function copiarMinuta(){
+  navigator.clipboard.writeText(document.getElementById('minuta-text').textContent).then(()=>{
+    const b=document.querySelector('.btn-copy');const o=b.innerHTML;
+    b.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" style="width:15px;height:15px;stroke-width:2"><path d="M9 11l3 3L22 4"/></svg> ¡Copiado!';
+    setTimeout(()=>{b.innerHTML=o;},2000);
+  });
+}
+
+function setDirF(f,btn){dirFiltro=f;document.querySelectorAll('#view-directorio .chip').forEach(x=>x.classList.remove('active'));btn.classList.add('active');renderDirectorio();}
+
+function renderDirectorio(){
+  const q=(document.getElementById('dir-search').value||'').toLowerCase();
+  let items=[];
+  if(dirFiltro==='todos'||dirFiltro==='campos'){db.campos.forEach(c=>{if(!q||c.nombre.toLowerCase().includes(q)||(c.exportadora||'').toLowerCase().includes(q)||c.zona.toLowerCase().includes(q))items.push({_tipo:'campo',_sort:c.nombre,_id:c.id,...c});});}
+  if(dirFiltro==='todos'||dirFiltro==='exportadoras'){const exps=[...new Set(db.campos.filter(c=>c.exportadora).map(c=>c.exportadora))];exps.forEach(e=>{if(!items.find(i=>i.nombre===e)&&(!q||e.toLowerCase().includes(q)))items.push({_tipo:'exportadora',_sort:e,_id:'exp-'+e,nombre:e});});db.contactos.filter(x=>x.tipo==='Exportadora').forEach(ct=>{if(!items.find(i=>i.nombre===ct.nombre)&&(!q||ct.nombre.toLowerCase().includes(q)))items.push({_tipo:'exportadora',_sort:ct.nombre,_id:ct.id,...ct});});}
+  if(dirFiltro==='todos'||dirFiltro==='administradores'){const seen=new Set();db.campos.forEach(c=>(c.contactos||[]).filter(x=>x.rol==='Administrador').forEach(ct=>{const k=ct.nom;if(!seen.has(k)&&(!q||ct.nom.toLowerCase().includes(q)||c.nombre.toLowerCase().includes(q))){seen.add(k);items.push({_tipo:'administrador',_sort:ct.nom,_id:'adm-'+k,nombre:ct.nom,empresa:c.nombre});}}));}
+  if(dirFiltro==='todos'||dirFiltro==='duenos'){const seen=new Set();db.campos.forEach(c=>(c.contactos||[]).filter(x=>x.rol==='Dueño').forEach(ct=>{const k=ct.nom;if(!seen.has(k)&&(!q||ct.nom.toLowerCase().includes(q)||c.nombre.toLowerCase().includes(q))){seen.add(k);items.push({_tipo:'dueno',_sort:ct.nom,_id:'due-'+k,nombre:ct.nom,empresa:c.nombre});}}));}
+  if(dirFiltro==='todos'||dirFiltro==='asesores'){db.contactos.filter(x=>x.tipo.includes('Asesor')).forEach(ct=>{if(!q||ct.nombre.toLowerCase().includes(q)||(ct.empresa||'').toLowerCase().includes(q))items.push({_tipo:'asesor',_sort:ct.nombre,_id:ct.id,...ct});});}
+  items.sort((a,b)=>a._sort.localeCompare(b._sort,'es'));
+  if(!items.length){document.getElementById('dir-list').innerHTML=`<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg><p>Sin resultados</p></div>`;return;}
+  let html='';let lastL='';
+  items.forEach(item=>{
+    const L=item._sort[0].toUpperCase();
+    if(L!==lastL){html+=`<div class="alpha-letter">${L}</div>`;lastL=L;}
+    const avCls=item._tipo==='campo'?'av-campo':item._tipo==='exportadora'?'av-exp':item._tipo==='administrador'?'av-admin':item._tipo==='dueno'?'av-dueno':'av-asesor';
+    const sub=item._tipo==='campo'?`${item.exportadora||'Independiente'} · ${item.zona}`:item._tipo==='exportadora'?'Exportadora':item._tipo==='administrador'?'Administrador · '+item.empresa:item._tipo==='dueno'?'Dueño · '+item.empresa:(item.tipo||'Asesor')+' · '+(item.empresa||'');
+    const onclick=item._tipo==='campo'?`openModalCampo('${item._id}')`:item._tipo==='asesor'?`openModalContacto('${item._id}')`:'' ;
+    html+=`<div class="dir-item" ${onclick?`onclick="${onclick}"`:''}><div class="dir-avatar ${avCls}">${iniciales(item.nombre)}</div><div class="dir-info"><div class="dir-name">${item.nombre}</div><div class="dir-sub">${sub}</div></div><div class="dir-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="9 18 15 12 9 6"/></svg></div></div>`;
+  });
+  document.getElementById('dir-list').innerHTML=html;
+}
+
+function openModalContacto(id){
+  const ct=db.contactos.find(x=>x.id===id);if(!ct)return;
+  currentCampoId=id;
+  document.getElementById('mct-nombre').textContent=ct.nombre;
+  document.getElementById('mct-sub').textContent=ct.tipo+(ct.empresa?' · '+ct.empresa:'');
+  let info='';
+  if(ct.tel)info+=`<div class="info-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6.09 6.09l.91-.91a2 2 0 0 1 2.11-.45c.907.34 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg><span class="info-lbl">Teléfono</span><span class="info-val">${ct.tel}</span></div>`;
+  if(ct.email)info+=`<div class="info-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg><span class="info-lbl">Email</span><span class="info-val">${ct.email}</span></div>`;
+  if(ct.notas)info+=`<div class="info-row" style="align-items:flex-start"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" style="margin-top:1px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span class="info-lbl">Notas</span><span class="info-val" style="font-weight:400;color:var(--text2)">${ct.notas}</span></div>`;
+  document.getElementById('mct-info').innerHTML=info||'<div style="font-size:13px;color:var(--text3)">Sin datos adicionales</div>';
+  const esCliente=ct.tipo==='Asesor (cliente)';
+  document.getElementById('mct-visitas-sec').style.display=esCliente?'block':'none';
+  document.getElementById('mct-btn-row').style.display=esCliente?'flex':'none';
+  if(esCliente){const vs=db.visitas.filter(v=>v.clienteId===id).sort((a,b)=>new Date(b.fecha)-new Date(a.fecha));document.getElementById('mct-visitas').innerHTML=vs.length===0?'<div style="font-size:13px;color:var(--text3)">Sin visitas</div>':vs.map(v=>`<div class="visit-hist-item"><div class="visit-hist-dot"></div><div class="visit-hist-date">${v.fecha}</div><div class="visit-hist-text">${v.resumen}</div></div>`).join('');}
+  openModal('modal-contacto');
+}
+
+function setPendF(f,btn){pendFiltro=f;document.querySelectorAll('#view-pendientes .chip').forEach(x=>x.classList.remove('active'));btn.classList.add('active');renderPendientes();}
+function renderPendientes(){
+  let pends=db.pendientes;
+  if(pendFiltro==='activos')pends=pends.filter(p=>!p.enviado);
+  if(pendFiltro==='enviados')pends=pends.filter(p=>p.enviado);
+  pends=pends.sort((a,b)=>new Date(a.fecha)-new Date(b.fecha));
+  if(!pends.length){document.getElementById('pends-list').innerHTML=`<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg><p>${pendFiltro==='activos'?'¡Todo al día!':'Sin enviados aún.'}</p></div>`;return;}
+  document.getElementById('pends-list').innerHTML=pends.map(p=>{const c=db.campos.find(x=>x.id===p.clienteId)||db.contactos.find(x=>x.id===p.clienteId);return`<div class="pend-card ${p.enviado?'done':''}"><div class="pend-client">${c?c.nombre:'?'}</div><div class="pend-text">${p.texto}</div>${p.notaEnvio?`<div class="pend-nota">→ ${p.notaEnvio}</div>`:''}<div class="pend-meta"><span class="pend-date">${p.fecha}</span><button class="btn-done" onclick="togglePend('${p.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 11l3 3L22 4"/></svg>${p.enviado?'Enviado':'Marcar enviado'}</button></div>${!p.enviado?`<input class="pend-nota-input" placeholder="Nota de envío (opcional)..." value="${p.notaEnvio||''}" onchange="setNotaEnvio('${p.id}',this.value)">`:''}</div>`;}).join('');
+}
+function togglePend(id){const p=db.pendientes.find(x=>x.id===id);if(p){p.enviado=!p.enviado;saveDB();renderPendientes();}}
+function setNotaEnvio(id,val){const p=db.pendientes.find(x=>x.id===id);if(p){p.notaEnvio=val;saveDB();}}
+
+function updateFVRs(){const id=document.getElementById('fv-cliente').value;const c=db.campos.find(x=>x.id===id);const rs=c?(c.razonSocial||[]):[];document.getElementById('fv-rs').innerHTML='<option value="">Sin especificar</option>'+rs.map(r=>`<option value="${r.nom}">${r.nom}</option>`).join('');}
+function openFormVisita(clienteId){
+  closeModal('modal-campo');closeModal('modal-contacto');
+  const todos=[...db.campos,...db.contactos.filter(x=>x.tipo==='Asesor (cliente)')];
+  document.getElementById('fv-cliente').innerHTML=todos.map(c=>`<option value="${c.id}" ${c.id===clienteId?'selected':''}>${c.nombre}</option>`).join('');
+  updateFVRs();document.getElementById('fv-fecha').value=hoy();document.getElementById('fv-prep').value='';document.getElementById('fv-resumen').value='';
+  proxDias=30;document.querySelectorAll('.radio-opt').forEach(b=>{b.classList.toggle('sel',b.textContent==='30 días');});
+  pendFormList=[];document.getElementById('pend-form-list').innerHTML='';document.getElementById('pend-new-input').value='';
+  document.getElementById('form-visita').classList.add('open');
+}
+function selProx(btn,dias){proxDias=parseInt(dias);document.querySelectorAll('.radio-opt').forEach(b=>b.classList.remove('sel'));btn.classList.add('sel');}
+function addPF(){const inp=document.getElementById('pend-new-input');const t=inp.value.trim();if(!t)return;pendFormList.push(t);inp.value='';renderPF();}
+function renderPF(){document.getElementById('pend-form-list').innerHTML=pendFormList.map((t,i)=>`<div class="pend-form-item">${t}<button class="btn-rem" onclick="pendFormList.splice(${i},1);renderPF()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>`).join('');}
+function saveVisita(){
+  const clienteId=document.getElementById('fv-cliente').value;const resumen=document.getElementById('fv-resumen').value.trim();
+  if(!resumen){alert('Escribe un resumen de la visita');return;}
+  const fecha=document.getElementById('fv-fecha').value;const prox=proxDias>0?sumarDias(fecha,proxDias):'';
+  const vid=uid();const pids=pendFormList.map(t=>{const pid=uid();db.pendientes.push({id:pid,clienteId,visitaId:vid,texto:t,enviado:false,fecha,notaEnvio:''});return pid;});
+  db.visitas.push({id:vid,clienteId,rs:document.getElementById('fv-rs').value,fecha,prep:document.getElementById('fv-prep').value.trim(),resumen,proximaVisita:prox,pendIds:pids});
+  saveDB();closeModal('form-visita');showView('dashboard');
+}
+
+let editingCampoId = null;
+function openFormCampo(id){
+  editingCampoId = id || null;
+  const c = id ? db.campos.find(x=>x.id===id) : null;
+  document.getElementById('fc-exportadora').value = c?(c.exportadora||''):'';
+  document.getElementById('fc-nombre').value = c?(c.nombre||''):'';
+  document.getElementById('fc-zona').value = c?(c.zona||''):'';
+  document.getElementById('fc-notas').value = c?(c.notas||''):'';
+  document.getElementById('fc-gps').value = c?(c.gps||''):'';
+  document.getElementById('fc-sup').value = c?(c.superficie||''):'';
+  document.getElementById('fc-tipo').value = c?(c.tipo||'independiente'):'independiente';
+  document.getElementById('fc-exp-row').style.display = (c&&c.tipo==='exportadora')?'block':'none';
+  fcCultivos = c?JSON.parse(JSON.stringify(c.cultivos||[])):[];
+  fcRS = c?JSON.parse(JSON.stringify(c.razonSocial||[])):[];
+  fcContactos = c?JSON.parse(JSON.stringify(c.contactos||[])):[];
+  renderFCLists();
+  document.querySelector('#form-campo .modal-title').textContent = c?'Editar campo':'Nuevo campo';
+  document.querySelector('#form-campo .btn-save').textContent = c?'Guardar cambios':'Guardar campo';
+  if(c) closeModal('modal-campo');
+  document.getElementById('form-campo').classList.add('open');
+}
+function confirmarEliminarCampo(id){
+  const c = db.campos.find(x=>x.id===id);
+  if(!c) return;
+  if(confirm(`¿Eliminar el campo "${c.nombre}"?\n\nEsto también eliminará su historial de visitas y pendientes asociados. Esta acción no se puede deshacer.`)){
+    db.campos = db.campos.filter(x=>x.id!==id);
+    db.visitas = db.visitas.filter(v=>v.clienteId!==id);
+    db.pendientes = db.pendientes.filter(p=>p.clienteId!==id);
+    saveDB();
+    closeModal('modal-campo');
+    renderCampos();
+    renderDashboard();
+  }
+}
+function toggleFCTipo(){document.getElementById('fc-exp-row').style.display=document.getElementById('fc-tipo').value==='exportadora'?'block':'none';}
+function addCultivo(){const n=document.getElementById('fc-cultivo-nom').value.trim();const s=document.getElementById('fc-cultivo-sup').value.trim();if(!n)return;fcCultivos.push({nom:n,sup:s});document.getElementById('fc-cultivo-nom').value='';document.getElementById('fc-cultivo-sup').value='';renderFCLists();}
+function addRS(){const n=document.getElementById('fc-rs-nom').value.trim();const r=document.getElementById('fc-rs-rut').value.trim();if(!n)return;fcRS.push({nom:n,rut:r});document.getElementById('fc-rs-nom').value='';document.getElementById('fc-rs-rut').value='';renderFCLists();}
+function addContactoCampo(){const n=document.getElementById('fc-cont-nom').value.trim();const r=document.getElementById('fc-cont-rol').value;if(!n)return;fcContactos.push({nom:n,rol:r});document.getElementById('fc-cont-nom').value='';renderFCLists();}
+function renderFCLists(){
+  document.getElementById('fc-cultivos-list').innerHTML=fcCultivos.map((c,i)=>`<div class="tag-item"><span>${c.nom}${c.sup?' · '+c.sup+' há':''}</span><button class="btn-rem" onclick="fcCultivos.splice(${i},1);renderFCLists()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>`).join('');
+  document.getElementById('fc-rs-list').innerHTML=fcRS.map((r,i)=>`<div class="tag-item"><span>${r.nom}${r.rut?' · '+r.rut:''}</span><button class="btn-rem" onclick="fcRS.splice(${i},1);renderFCLists()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>`).join('');
+  document.getElementById('fc-contactos-list').innerHTML=fcContactos.map((c,i)=>`<div class="tag-item"><span>${c.nom} · ${c.rol}</span><button class="btn-rem" onclick="fcContactos.splice(${i},1);renderFCLists()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>`).join('');
+}
+function capturarGPS(){if(!navigator.geolocation){alert('Tu navegador no soporta geolocalización');return;}navigator.geolocation.getCurrentPosition(pos=>{document.getElementById('fc-gps').value=`https://maps.google.com/?q=${pos.coords.latitude},${pos.coords.longitude}`;},()=>alert('No se pudo obtener la ubicación.'));}
+function saveCampo(){
+  const nombre=document.getElementById('fc-nombre').value.trim();
+  if(!nombre){alert('El nombre del campo es obligatorio');return;}
+  const data={tipo:document.getElementById('fc-tipo').value,exportadora:document.getElementById('fc-exportadora').value.trim(),nombre,zona:document.getElementById('fc-zona').value.trim(),superficie:document.getElementById('fc-sup').value,gps:document.getElementById('fc-gps').value.trim(),notas:document.getElementById('fc-notas').value.trim(),cultivos:[...fcCultivos],razonSocial:[...fcRS],contactos:[...fcContactos]};
+  if(editingCampoId){
+    const idx=db.campos.findIndex(x=>x.id===editingCampoId);
+    if(idx>-1) db.campos[idx]={...db.campos[idx],...data};
+  } else {
+    db.campos.push({id:uid(),...data});
+  }
+  saveDB();closeModal('form-campo');renderCampos();renderDashboard();
+}
+function openFormContacto(){['fct-nombre','fct-empresa','fct-tel','fct-email','fct-notas'].forEach(id=>document.getElementById(id).value='');document.getElementById('fct-tipo').value='Administrador';document.getElementById('form-contacto').classList.add('open');}
+function saveContacto(){const nombre=document.getElementById('fct-nombre').value.trim();if(!nombre){alert('El nombre es obligatorio');return;}db.contactos.push({id:uid(),tipo:document.getElementById('fct-tipo').value,nombre,empresa:document.getElementById('fct-empresa').value.trim(),tel:document.getElementById('fct-tel').value.trim(),email:document.getElementById('fct-email').value.trim(),notas:document.getElementById('fct-notas').value.trim()});saveDB();closeModal('form-contacto');renderDirectorio();}
+
+// ─── EXPORTAR ─────────────────────────────────────────────
+function descargarArchivo(contenido, nombre, tipo){
+  const blob = new Blob([contenido], {type: tipo});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = nombre;
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function exportarJSON(){
+  const fecha = hoy();
+  descargarArchivo(JSON.stringify(db, null, 2), `apk-agro-backup-${fecha}.json`, 'application/json');
+  showSyncStatus('✓ Respaldo JSON descargado');
+}
+
+function csvEscape(v){
+  v = (v===undefined||v===null)?'':String(v);
+  if(/[",\n;]/.test(v)) return '"'+v.replace(/"/g,'""')+'"';
+  return v;
+}
+
+function exportarExcel(){
+  const cols = ['Campo','Tipo','Exportadora','Zona','Superficie Total (ha)','Razon Social','RUT','Asesor','Cultivo','Hectareas Cultivo','Notas'];
+  const rows = [cols];
+  db.campos.forEach(c=>{
+    const rsList = (c.razonSocial&&c.razonSocial.length)?c.razonSocial:[{nom:'',rut:''}];
+    const asesores = (c.contactos||[]).filter(x=>x.rol==='Asesor').map(x=>x.nom).join(' / ');
+    const cultivos = (c.cultivos&&c.cultivos.length)?c.cultivos:[{nom:'',sup:''}];
+    // one row per cultivo (and repeat razon social info on first row)
+    cultivos.forEach((cu,i)=>{
+      const rs = rsList[Math.min(i,rsList.length-1)] || {nom:'',rut:''};
+      rows.push([
+        c.nombre, c.tipo, c.exportadora||'', c.zona||'', c.superficie||'',
+        i===0 ? rsList.map(r=>r.nom).join(' / ') : '',
+        i===0 ? rsList.map(r=>r.rut).join(' / ') : '',
+        i===0 ? asesores : '',
+        cu.nom||'', cu.sup||'',
+        i===0 ? (c.notas||'') : ''
+      ]);
+    });
+  });
+  const csv = '\uFEFF'+rows.map(r=>r.map(csvEscape).join(';')).join('\n');
+  descargarArchivo(csv, `apk-agro-campos-${hoy()}.csv`, 'text/csv;charset=utf-8');
+  showSyncStatus('✓ Excel (CSV) descargado');
+}
+
+// ─── INIT ─────────────────────────────────────────────────
+window.onload = function() {
+  // Configurar botón login con redirect
+  document.getElementById('btn-login').href = buildAuthUrl();
+
+  // Verificar si venimos de un redirect con token
+  if(checkTokenFromUrl()) {
+    mostrarApp();
+    cargarDesdeDrive();
+    return;
+  }
+
+  // Intentar restaurar sesión guardada
+  const savedToken = localStorage.getItem('apkagro_token');
+  if(savedToken) {
+    accessToken = savedToken;
+    mostrarApp();
+    cargarDesdeDrive();
+  }
+};
+</script>
 </body>
 </html>
